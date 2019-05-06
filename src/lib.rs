@@ -2,27 +2,27 @@ use serde_json::Value;
 
 #[derive(Debug, PartialEq)]
 /// Data Structure that holds the recipe to brew tea (ETL data).
-struct Pot<'a> {
+pub struct Pot<'a> {
     recipe: Vec<Ingredient<'a>>,
 }
 
 impl<'a> Pot<'a> {
     ///
     /// Initializes Pot with an empty recipe.
-    fn new() -> Pot<'a> {
+    pub fn new() -> Pot<'a> {
         Pot { recipe: Vec::new() }
     }
 
     ///
-    /// Ingredient is the instruction being added to the brew.
-    fn add(&mut self, ingredient: Ingredient<'a>) {
+    /// The ingredient is the instruction being added to the brew.
+    pub fn add(&mut self, ingredient: Ingredient<'a>) {
         &self.recipe.push(ingredient);
     }
 }
 
 #[derive(Debug, PartialEq)]
 /// Data Structure defining types of Ingredients that can be added to the brew.
-enum Ingredient<'a> {
+pub enum Ingredient<'a> {
     Fill,
     Transfuse(Vec<Tea>),
     Steep(&'a Tea),
@@ -32,7 +32,7 @@ enum Ingredient<'a> {
 
 #[derive(Debug, PartialEq)]
 /// Resulting data that is being manipulated in the brew.
-struct Tea {
+pub struct Tea {
     data: serde_json::Value,
 }
 
@@ -40,7 +40,7 @@ impl Tea {
     /// Temporarily, new creates sample data to test constructing the recipe and adding it to the
     /// Pot. In the future, Fill will result in data that is passed on to the processes to be
     /// brewed.
-    fn new() -> Tea {
+    pub fn new() -> Tea {
         let data = r#"{
             "x": 1,
             "str_val": "test",
