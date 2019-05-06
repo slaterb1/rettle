@@ -1,7 +1,8 @@
 [package]
 name = "rettle"
 version = "0.1.0"
-authors = ["Benjamin Slater <ben@hackcapital.com>"]
+authors = ["Benjamin Slater <benjamin.ed.slater@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+serde_json = "1.0"
