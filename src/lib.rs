@@ -3,21 +3,21 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq)]
 /// Data Structure that holds the recipe to brew tea (ETL data).
-pub struct Pot<'a> {
-    recipe: Vec<Ingredient<'a>>,
+pub struct Pot<'a, T: Ingredient> {
+    recipe: Vec<Box<T>>,
     tea: Tea<'a>,
 }
 
-impl<'a> Pot<'a> {
+impl<'a, T: Ingredient> Pot<'a, T> {
     ///
     /// Initializes Pot with an empty recipe.
-    pub fn new() -> Pot<'a> {
+    pub fn new() -> Pot<'a, T> {
         Pot { recipe: Vec::new(), tea: Tea::new() }
     }
 
     ///
     /// The ingredient is the instruction being added to the brew.
-    pub fn add(&mut self, ingredient: Ingredient<'a>) {
+    pub fn add(&mut self, ingredient: T) {
         &self.recipe.push(ingredient);
     }
 
@@ -25,15 +25,19 @@ impl<'a> Pot<'a> {
         &self.tea
     }
 
+    fn fill(&mut self, tea: Tea<'a>) {
+        self.tea = tea;
+    }
+
     ///
     /// This runs the recipe to transform data.
     pub fn brew(&self) -> u32 {
         for i in &self.recipe {
-            match i {
-                Ingredient::Fill => println!("Fill operation!"),
-                Ingredient::Steep => println!("Steep operation, with tea: {:?}!", &self.get_tea()),
-                Ingredient::Pour => println!("Pour operation, with tea: {:?}!", &self.get_tea()),
-                _ => println!("Some other operation")
+            if let Some(fill) = i.downcast_ref::<Fill>() {
+                println!("Fill operation!");
+                fill.exec(&self);
+            } else {
+                println!("Some other operation")
             }
         }
         3
@@ -48,33 +52,31 @@ pub struct RawTea1<'a> {
     y: bool,
 }
 
-#[derive(Debug, PartialEq)]
+//#[derive(Debug, PartialEq)]
 /// Data Structure defining types of Ingredients that can be added to the brew.
-pub enum Ingredient<'a> {
-    Fill,
-    Transfuse(Vec<Tea<'a>>),
-    Steep,
-    Skim,
-    Pour,
+///
+/// Forums online state that "trait Ingredient" is the proper way to handle methods and referencing
+/// components.
+//pub enum Ingredient<'a> {
+//    Fill(FillStruct),
+//    Transfuse(Vec<Tea<'a>>),
+//    Steep,
+//    Skim,
+//    Pour,
+//}
+
+trait Ingredient{
+    fn exec(&self) -> Tea;
 }
 
-pub struct Fill {
-}
+pub struct Fill;
+pub struct Transfuse;
+pub struct Steep;
+pub struct Skim;
+pub struct Pour;
 
-pub struct Transfuse {
-}
-
-pub struct Steep {
-}
-
-pub struct Skim {
-}
-
-pub struct Pour {
-}
-
-impl<'a> Fill {
-    fn fill() -> Tea<'a> {
+impl<'a> Ingredient for Fill {
+    fn exec(&self) -> Tea {
         let data = r#"{
             "x": 1,
             "str_val": "test",
