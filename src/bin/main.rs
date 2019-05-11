@@ -14,7 +14,7 @@ fn main() {
     new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1")
     }));
-    let new_brewer = Brewer::new(new_pot.get_recipe());
+    let new_brewer = Brewer::new();
     //new_brewer.update_steps(new_pot.get_recipe());
     let count = new_pot.brew(new_brewer);
     println!("Count: {}", count);

@@ -10,8 +10,8 @@ pub struct Pot<'a> {
 }
 
 /// Worker that runs the recipe and brew tea.
-pub struct Brewer<'a> {
-    steps: &'a Vec<Box<dyn Ingredient<'a>>>,
+// TODO: decouple steps and recipe
+pub struct Brewer {
     tea: Tea,
 }
 
@@ -59,11 +59,12 @@ impl<'a> Pot<'a> {
             println!("Tea from source: {:?}", brewer.get_tea());
         }
         
-        for step in brewer.steps.iter() {
+        for step in self.recipe.iter() {
             if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
                 println!("Steep operation!");
                 let tea = steep.exec(brewer.get_tea());
                 brewer.update_brew(tea);
+                println!("Tea after steep: {:?}", brewer.get_tea());
             } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
                 println!("Pour operation!");
                 let _tea = pour.exec(brewer.get_tea());
@@ -77,19 +78,14 @@ impl<'a> Pot<'a> {
     }
 }
 
-impl<'a> Brewer<'a> {
-    pub fn new(steps: &'a Vec<Box<dyn Ingredient<'a>>>) -> Brewer<'a> {
+impl Brewer {
+    pub fn new() -> Brewer {
         let tea = Tea::new();
-        Brewer { steps, tea }
+        Brewer { tea }
     }
-    pub fn update_steps(&mut self, steps: &'a Vec<Box<dyn Ingredient<'a>>>) {
-        self.steps = steps;
-    }
-
     pub fn get_tea(&self) -> &Tea {
         &self.tea
     }
-
     fn update_brew(&mut self, tea: Tea) {
         self.tea = tea;
     }
@@ -158,10 +154,11 @@ impl Source for Fill {
 }
 
 impl<'a> Ingredient<'a> for Steep {
+    // TODO: remap existing tea, or efficiently copy over non-changed values
     fn exec(&self, tea: &Tea) -> Tea {
         let x = tea.data.x;
         let x = x - 1234567;
-        let mut new_tea = Tea { data: RawTea1 { x, str_val: String::from("test"), y: false } };
+        let new_tea = Tea { data: RawTea1 { x, str_val: String::from(&tea.data.str_val[..]), y: false } };
         new_tea
 
     }
@@ -180,7 +177,7 @@ impl<'a> Ingredient<'a> for Pour {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn exec(&self, tea: &Tea) -> Tea {
+    fn exec(&self, _tea: &Tea) -> Tea {
         println!("Dumped tea out! Oops");
         Tea { data: RawTea1 { x: 1, str_val: String::from("test"), y: false } }
     }
