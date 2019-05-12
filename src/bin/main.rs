@@ -1,6 +1,6 @@
 extern crate rettle;
 
-use rettle::Pot;
+use rettle::pot::Pot;
 use rettle::ingredient::{Fill, Steep, Pour};
 pub use rettle::brewer::Brewer;
 
