@@ -41,7 +41,7 @@ pub struct Pour{
     pub name: String,
 }
 
-impl<'a, T> Ingredient<'a> for Steep<T> 
+impl<'a, T: 'static> Ingredient<'a> for Steep<T> 
     where T: Fn(&Tea) -> Tea
 {
     // TODO: remap existing tea, or efficiently copy over non-changed values
