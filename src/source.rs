@@ -12,6 +12,7 @@ pub trait Source {
     fn collect(&self) -> Tea;
     fn as_any(&self) -> &dyn Any;
     fn print(&self);
+    fn get_name(&self) -> &str;
 }
 
 impl Source for Fill {
@@ -24,8 +25,11 @@ impl Source for Fill {
         let data: RawTea1 = serde_json::from_str(data).unwrap();
         Tea { data }
     }
+    fn get_name(&self) -> &str {
+        &self.name[..]
+    }
     fn print(&self) {
-        println!("Current Source: {}", self.name);
+        println!("Current Source: {}", self.get_name());
     }
     fn as_any(&self) -> &dyn Any {
         self

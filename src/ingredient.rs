@@ -6,7 +6,18 @@ pub trait Ingredient<'a> {
     fn exec(&self, tea: &Tea) -> Tea;
     fn print(&self); 
     fn as_any(&self) -> &dyn Any;
+    fn get_name(&self) -> &str;
 }
+
+//impl<'a> PartialEq for &'a Ingredient<'a> {
+//    fn eq(&self, other: &Self) -> bool {
+//        let tea = Tea::new();
+//        if self.exec(&tea) != other.exec(&tea) {
+//            return false;
+//        }
+//        true
+//    }
+//}
 
 pub struct Fill{
     pub source: String,
@@ -36,8 +47,11 @@ impl<'a> Ingredient<'a> for Steep {
         new_tea
 
     }
+    fn get_name(&self) -> &str {
+        &self.name[..]
+    }
     fn print(&self) {
-        println!("Current Step: {}", self.name);
+        println!("Current Step: {}", self.get_name());
     }
     fn as_any(&self) -> &dyn Any {
         self
@@ -45,8 +59,11 @@ impl<'a> Ingredient<'a> for Steep {
 }
 
 impl<'a> Ingredient<'a> for Pour {
+    fn get_name(&self) -> &str {
+        &self.name[..]
+    }
     fn print(&self) {
-        println!("Current Step: {}", self.name);
+        println!("Current Step: {}", self.get_name());
     }
     fn as_any(&self) -> &dyn Any {
         self
