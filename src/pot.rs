@@ -47,4 +47,84 @@ impl<'a> Pot<'a> {
     }
 }
 
+//impl<'a> PartialEq for Pot<'a> {
+//    fn eq(&self, other: &Pot) -> bool {
+//        if self.recipe.len() != other.recipe.len() {
+//            return false;
+//        }
+//        for (i, item) in self.recipe.iter().enumerate() {
+//            if **item != *other.recipe[i] {
+//                return false;
+//            }
+//        }
+//        true
+//    }
+//}
+
+#[cfg(test)]
+mod tests {
+    use super::Pot;
+    use super::super::ingredient::{Fill, Steep, Pour};
+
+    #[test]
+    fn create_empty_pot() {
+        let new_pot = Pot::new();
+        assert_eq!(new_pot.get_recipe().len(), 0);
+    }
+
+    #[test]
+    fn create_pot_with_source() {
+        let mut new_pot = Pot::new();
+        new_pot.add_source(Box::new(Fill{
+            name: String::from("fake_tea"),
+            source: String::from("hardcoded"),
+        }));
+        assert_eq!(new_pot.get_sources().len(), 1);
+        assert_eq!(new_pot.get_sources()[0].get_name(), "fake_tea");
+    }
+
+    #[test]
+    fn create_pot_with_recipe() {
+        let mut new_pot = Pot::new();
+        new_pot.add_ingredient(Box::new(Steep{
+            name: String::from("steep1")
+        }));
+        new_pot.add_ingredient(Box::new(Pour{
+            name: String::from("pour1")
+        }));
+        assert_eq!(new_pot.get_recipe().len(), 2);
+        assert_eq!(new_pot.get_recipe()[0].get_name(), "steep1");
+        assert_eq!(new_pot.get_recipe()[1].get_name(), "pour1");
+    }
+
+    #[test]
+    fn create_pot_with_source_and_recipe() {
+        let mut new_pot = Pot::new();
+        new_pot.add_source(Box::new(Fill{
+            name: String::from("fake_tea"),
+            source: String::from("hardcoded"),
+        }));
+        new_pot.add_ingredient(Box::new(Steep{
+            name: String::from("steep1")
+        }));
+        new_pot.add_ingredient(Box::new(Pour{
+            name: String::from("pour1")
+        }));
+        assert_eq!(new_pot.get_sources().len(), 1);
+        assert_eq!(new_pot.get_recipe().len(), 2);
+        assert_eq!(new_pot.get_sources()[0].get_name(), "fake_tea");
+        assert_eq!(new_pot.get_recipe()[0].get_name(), "steep1");
+        assert_eq!(new_pot.get_recipe()[1].get_name(), "pour1");
+    }
+
+    //TODO: Readd test after returning Result
+    //#[test]
+    //fn brew_recipe() {
+    //    let mut new_pot = Pot::new();
+    //    new_pot.add(Box::new(Fill));
+    //    new_pot.add(Box::new(Steep));
+    //    new_pot.add(Box::new(Pour));
+    //    assert_eq!(new_pot.brew(), 3);
+    //}
+}
 
