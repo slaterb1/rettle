@@ -19,12 +19,14 @@ impl Brewer {
     }
     ///
     /// This function iterates over the brewer's steps to produce the final tea.
-    pub fn make_tea(&mut self, recipe: &Vec<Box<Ingredient>>, tea: Tea) {
+    pub fn make_tea<F: 'static>(&mut self, recipe: &Vec<Box<Ingredient>>, tea: Tea)
+        where F: Fn(&Tea) -> Tea
+    {
         // Save initial state of tea in brewer
         self.update_brew(tea);
         for step in recipe.iter() {
             step.print();
-            if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
+            if let Some(steep) = step.as_any().downcast_ref::<Steep<F>>() {
                 println!("Steep operation!");
                 let tea = steep.exec(self.get_tea());
                 self.update_brew(tea);

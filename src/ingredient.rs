@@ -26,8 +26,11 @@ pub struct Fill{
 
 pub struct Transfuse;
 
-pub struct Steep{
+pub struct Steep<F> 
+    where F: Fn(&Tea) -> Tea
+{
     pub name: String,
+    computation: F 
 }
 
 pub struct Skim{
@@ -38,13 +41,12 @@ pub struct Pour{
     pub name: String,
 }
 
-impl<'a> Ingredient<'a> for Steep {
+impl<'a, F: 'static> Ingredient<'a> for Steep<F> 
+    where F: Fn(&Tea) -> Tea
+{
     // TODO: remap existing tea, or efficiently copy over non-changed values
     fn exec(&self, tea: &Tea) -> Tea {
-        let x = tea.data.x;
-        let x = x - 1234567;
-        let new_tea = Tea { data: RawTea1 { x, str_val: String::from(&tea.data.str_val[..]), y: false } };
-        new_tea
+        (self.computation)(tea)
     }
     fn get_name(&self) -> &str {
         &self.name[..]
