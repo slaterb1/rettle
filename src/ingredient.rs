@@ -26,11 +26,9 @@ pub struct Fill{
 
 pub struct Transfuse;
 
-pub struct Steep<F> 
-    where F: Fn(&Tea) -> Tea
-{
+pub struct Steep {
     pub name: String,
-    computation: F 
+    pub computation: Box<Fn(&Tea) -> Tea> 
 }
 
 pub struct Skim{
@@ -41,9 +39,7 @@ pub struct Pour{
     pub name: String,
 }
 
-impl<'a, F: 'static> Ingredient<'a> for Steep<F> 
-    where F: Fn(&Tea) -> Tea
-{
+impl<'a> Ingredient<'a> for Steep {
     // TODO: remap existing tea, or efficiently copy over non-changed values
     fn exec(&self, tea: &Tea) -> Tea {
         (self.computation)(tea)
