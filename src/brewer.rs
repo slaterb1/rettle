@@ -33,7 +33,6 @@ impl Brewer {
                 let _tea = pour.exec(self.get_tea());
             }
         }
-        println!("Final Tea: {:?}", self.get_tea());
     }
 }
 

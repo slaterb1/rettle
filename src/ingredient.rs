@@ -37,6 +37,7 @@ pub struct Skim{
 
 pub struct Pour{
     pub name: String,
+    pub computation: Box<Fn(&Tea) -> Tea> 
 }
 
 impl<'a> Ingredient<'a> for Steep {
@@ -65,8 +66,7 @@ impl<'a> Ingredient<'a> for Pour {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn exec(&self, _tea: &Tea) -> Tea {
-        println!("Dumped tea out! Oops");
-        Tea { data: RawTea1 { x: 1, str_val: String::from("test"), y: false } }
+    fn exec(&self, tea: &Tea) -> Tea {
+        (self.computation)(tea)
     }
 }

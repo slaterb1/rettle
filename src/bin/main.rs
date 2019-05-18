@@ -21,7 +21,11 @@ fn main() {
         }),
     }));
     new_pot.add_ingredient(Box::new(Pour{
-        name: String::from("pour1")
+        name: String::from("pour1"),
+        computation: Box::new(|tea: &Tea| {
+            println!("Final Tea: {:?}", tea);
+            Tea { data: RawTea1 { x: tea.data.x, str_val: String::from(&tea.data.str_val[..]), y: tea.data.y } }
+        }),
     }));
     let new_brewer = Brewer::new();
     //new_brewer.update_steps(new_pot.get_recipe());
