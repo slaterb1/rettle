@@ -14,3 +14,6 @@ rettle (word play on kettle) defines the following Types for any project to "Bre
 - **Steep:** data transformation step
 - **Skim:** remove a field (or Tea object)
 - **Pour:** data output destination
+
+## Traits
+- **Ingredient:** identifies types that can be put in recipe
