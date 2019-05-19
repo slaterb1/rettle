@@ -1,6 +1,6 @@
 use std::any::Any;
 
-pub use super::tea::{Tea, RawTea1};
+pub use super::tea::Tea;
 
 pub trait Ingredient<'a> {
     fn exec(&self, tea: &Tea) -> Tea;

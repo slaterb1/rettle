@@ -1,6 +1,6 @@
 use std::any::Any;
 
-pub use super::tea::{Tea, RawTea1};
+pub use super::tea::Tea;
 pub use super::ingredient::Fill;
 
 ///
@@ -22,8 +22,8 @@ impl Source for Fill {
             "str_val": "new_values",
             "y": false
         }"#;
-        let data: RawTea1 = serde_json::from_str(data).unwrap();
-        Tea { data }
+        let data: Tea = serde_json::from_str(data).unwrap();
+        data
     }
     fn get_name(&self) -> &str {
         &self.name[..]
