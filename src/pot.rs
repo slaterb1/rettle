@@ -35,15 +35,14 @@ impl<'a> Pot<'a> {
 
     ///
     /// This runs the recipe to transform data.
-    pub fn brew(&self, mut brewer: Brewer) {
-        let init_tea = brewer.get_tea();
-        println!("Initial tea: {:?}", init_tea);
+    pub fn brew(&self) {
         let source = &self.sources[0]; 
         source.print();
         let fill = source.as_any().downcast_ref::<Fill>().unwrap();
         let tea = fill.collect();
+        let mut brewer = Brewer::new(tea);
 
-        brewer.make_tea(self.get_recipe(), tea);
+        brewer.make_tea(self.get_recipe());
     }
 }
 
