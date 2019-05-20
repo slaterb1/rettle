@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::any::Any;
 
 // Example object that implements the Tea trait
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Default)]
 /// Resulting data that is being manipulated in the brew.
 pub struct TextTea {
     pub x: i32,
@@ -16,8 +16,11 @@ pub struct TextTea {
     pub y: bool,
 }
 
-impl TextTea {
-    pub fn new() -> Box<dyn Tea> {
+impl Tea for TextTea {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    fn new(self: Box<Self>) -> Box<dyn Tea> {
         let data = r#"{
           "x": 1,
           "str_val": "new_values",
@@ -28,19 +31,13 @@ impl TextTea {
     }
 }
 
-impl Tea for TextTea {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-}
-
 fn main() {
     let mut new_pot = Pot::new();
     new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
         computation: Box::new(|| {
-            TextTea::new()
+            TextTea::new(Box::new(TextTea::default()))
         }),
     }));
     new_pot.add_ingredient(Box::new(Steep{
