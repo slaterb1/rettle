@@ -14,7 +14,7 @@ pub trait Tea {
     /// }
     fn as_any(&self) -> &dyn Any;
 
-    /// Function definition for creating a new struct "Tea" object used by the `Pot::brew()` method. 
+    /// Create a new struct "Tea" object used by the `Pot::brew()` method. 
     ///
     /// This needs to be created by the Developer to specify how the data coming from the `Fill`
     /// operation will be structured and initialized before being manipulated by the rest of the
