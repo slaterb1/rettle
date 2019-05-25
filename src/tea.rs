@@ -9,11 +9,9 @@ pub trait Tea {
     ///
     /// # Example Method Implementation
     ///
-    /// ```
     /// fn as_any(&self) -> dyn Any {
     ///     self
     /// }
-    /// ```
     fn as_any(&self) -> &dyn Any;
 
     /// Function definition for creating a new struct "Tea" object used by the `Pot::brew()` method. 
