@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::any::Any;
 
 // Example object that implements the Tea trait
-#[derive(Serialize, Deserialize, Debug, PartialEq, Default)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
 /// Resulting data that is being manipulated in the brew.
 pub struct TextTea {
     pub x: i32,
@@ -44,9 +44,8 @@ fn main() {
         name: String::from("steep1"),
         computation: Box::new(|tea: &Box<dyn Tea>| {
             let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
-            let x = tea.x;
-            let x = x - 1234567;
-            let new_tea = TextTea { x, str_val: String::from(&tea.str_val[..]), y: false };
+            let mut new_tea = tea.clone();
+            new_tea.x = tea.x - 10000;
             Box::new(new_tea)
         }),
     }));
