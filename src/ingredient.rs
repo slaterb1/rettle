@@ -1,9 +1,9 @@
 use std::any::Any;
 
-pub use super::tea::{Tea, RawTea1};
+pub use super::tea::Tea;
 
 pub trait Ingredient<'a> {
-    fn exec(&self, tea: &Tea) -> Tea;
+    fn exec(&self, tea: &Box<dyn Tea>) -> Box<dyn Tea>;
     fn print(&self); 
     fn as_any(&self) -> &dyn Any;
     fn get_name(&self) -> &str;
@@ -22,13 +22,14 @@ pub trait Ingredient<'a> {
 pub struct Fill{
     pub source: String,
     pub name: String,
+    pub computation: Box<Fn() -> Box<dyn Tea>>
 }
 
 pub struct Transfuse;
 
 pub struct Steep {
     pub name: String,
-    pub computation: Box<Fn(&Tea) -> Tea> 
+    pub computation: Box<Fn(&Box<dyn Tea>) -> Box<dyn Tea>> 
 }
 
 pub struct Skim{
@@ -37,12 +38,12 @@ pub struct Skim{
 
 pub struct Pour{
     pub name: String,
-    pub computation: Box<Fn(&Tea) -> Tea> 
+    pub computation: Box<Fn(&Box<dyn Tea>) -> Box<dyn Tea>> 
 }
 
 impl<'a> Ingredient<'a> for Steep {
     // TODO: remap existing tea, or efficiently copy over non-changed values
-    fn exec(&self, tea: &Tea) -> Tea {
+    fn exec(&self, tea: &Box<dyn Tea>) -> Box<dyn Tea> {
         (self.computation)(tea)
     }
     fn get_name(&self) -> &str {
@@ -66,7 +67,7 @@ impl<'a> Ingredient<'a> for Pour {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn exec(&self, tea: &Tea) -> Tea {
+    fn exec(&self, tea: &Box<dyn Tea>) -> Box<dyn Tea> {
         (self.computation)(tea)
     }
 }

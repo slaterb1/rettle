@@ -1,33 +1,24 @@
-use serde::{Deserialize, Serialize};
+use std::any::Any;
 
-#[derive(Debug, PartialEq)]
-/// Resulting data that is being manipulated in the brew.
-pub struct Tea {
-    pub data: RawTea1
+/// This trait must be given to the data structure(s) that will be processed by the ETL.
+pub trait Tea {
+    /// Helper function that returns Box<dyn Tea> object as `Any`.
+    ///
+    /// This needs to be defined for the struct inheriting the `Tea` trait due to size not being
+    /// known at compile time.
+    ///
+    /// # Example Method Implementation
+    ///
+    /// fn as_any(&self) -> dyn Any {
+    ///     self
+    /// }
+    fn as_any(&self) -> &dyn Any;
+
+    /// Function definition for creating a new struct "Tea" object used by the `Pot::brew()` method. 
+    ///
+    /// This needs to be created by the Developer to specify how the data coming from the `Fill`
+    /// operation will be structured and initialized before being manipulated by the rest of the
+    /// `Pot::recipe` steps via the `Brewer::make_tea` method.
+    fn new(self: Box<Self>) -> Box<dyn Tea>;
 }
-
-// To be able to pattern match, need to define keys being mapped to from Fill
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
-pub struct RawTea1 {
-    pub x: i32,
-    pub str_val: String,
-    pub y: bool,
-}
-
-
-impl Tea {
-    /// Temporarily, new creates sample data to test constructing the recipe and adding it to the
-    /// Pot. In the future, Fill will result in data that is passed on to the processes to be
-    /// brewed.
-    pub fn new() -> Tea {
-        let data = r#"{
-          "x": 1,
-          "str_val": "new_values",
-          "y": false
-        }"#;
-        let data: RawTea1 = serde_json::from_str(data).unwrap();
-        Tea { data }
-    }
-}
-
 

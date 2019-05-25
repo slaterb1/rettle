@@ -3,25 +3,23 @@ pub use super::ingredient::{Ingredient, Steep, Pour};
 
 /// Worker that runs the recipe and brew tea.
 pub struct Brewer {
-    tea: Tea,
+    tea: Box<dyn Tea>,
 }
 
 impl Brewer {
-    pub fn new() -> Brewer {
-        let tea = Tea::new();
+    pub fn new(tea: Box<dyn Tea>) -> Brewer {
         Brewer { tea }
     }
-    pub fn get_tea(&self) -> &Tea {
+    pub fn get_tea(&self) -> &Box<dyn Tea> {
         &self.tea
     }
-    fn update_brew(&mut self, tea: Tea) {
+    fn update_brew(&mut self, tea: Box<dyn Tea>) {
         self.tea = tea;
     }
     ///
     /// This function iterates over the brewer's steps to produce the final tea.
-    pub fn make_tea(&mut self, recipe: &Vec<Box<Ingredient>>, tea: Tea) {
+    pub fn make_tea(&mut self, recipe: &Vec<Box<Ingredient>>) {
         // Save initial state of tea in brewer
-        self.update_brew(tea);
         for step in recipe.iter() {
             step.print();
             if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
