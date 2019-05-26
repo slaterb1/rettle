@@ -9,6 +9,10 @@ pub trait Ingredient<'a> {
     fn get_name(&self) -> &str;
 }
 
+pub trait Argument {
+    fn as_any(&self) -> &dyn Any;
+}
+
 //impl<'a> PartialEq for &'a Ingredient<'a> {
 //    fn eq(&self, other: &Self) -> bool {
 //        let tea = Tea::new();
@@ -22,27 +26,35 @@ pub trait Ingredient<'a> {
 pub struct Fill{
     pub source: String,
     pub name: String,
-    pub computation: Box<Fn() -> Box<dyn Tea>>
+    pub computation: Box<Fn(&Box<dyn Argument>) -> Box<dyn Tea>>,
 }
 
 pub struct Transfuse;
 
-pub struct Steep {
+pub struct Steep<'a> {
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Tea>) -> Box<dyn Tea>> 
+    pub computation: Box<Fn(&Box<dyn Tea>, &Box<dyn Argument>) -> Box<dyn Tea>>, 
+    pub arguments: &'a Box<dyn Argument>,
 }
 
-pub struct Skim{
+pub struct Skim<'a> {
     pub name: String,
+    pub computation: Box<Fn(&Box<dyn Tea>) -> Box<dyn Tea>>, 
+    pub arguments: &'a Box<dyn Argument>,
 }
 
 pub struct Pour{
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Tea>) -> Box<dyn Tea>> 
+    pub computation: Box<Fn(&Box<dyn Tea>, &Box<dyn Argument>) -> Box<dyn Tea>>, 
 }
 
-impl<'a> Ingredient<'a> for Steep {
-    // TODO: remap existing tea, or efficiently copy over non-changed values
+impl<'a> Steep<'a> {
+    pub fn get_arguments(&self) -> &Box<dyn Argument> {
+        &self.arguments
+    }
+}
+
+impl<'a> Ingredient<'a> for Steep<'a> {
     fn exec(&self, tea: &Box<dyn Tea>) -> Box<dyn Tea> {
         (self.computation)(tea)
     }
