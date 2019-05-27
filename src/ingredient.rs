@@ -27,36 +27,71 @@ pub struct Fill{
     pub source: String,
     pub name: String,
     pub computation: Box<Fn(&Box<dyn Argument>) -> Box<dyn Tea>>,
+    pub params: Box<dyn Argument>,
 }
 
 pub struct Transfuse;
 
-pub struct Steep<'a> {
+pub struct Steep {
     pub name: String,
     pub computation: Box<Fn(&Box<dyn Tea>, &Box<dyn Argument>) -> Box<dyn Tea>>, 
-    pub arguments: &'a Box<dyn Argument>,
+    pub params: Box<dyn Argument>,
 }
 
-pub struct Skim<'a> {
+pub struct Skim {
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Tea>) -> Box<dyn Tea>>, 
-    pub arguments: &'a Box<dyn Argument>,
+    pub computation: Box<Fn(&Box<dyn Tea>, &Box<dyn Argument>) -> Box<dyn Tea>>, 
+    pub params: Box<dyn Argument>,
 }
 
 pub struct Pour{
     pub name: String,
     pub computation: Box<Fn(&Box<dyn Tea>, &Box<dyn Argument>) -> Box<dyn Tea>>, 
+    pub params: Box<dyn Argument>,
 }
 
-impl<'a> Steep<'a> {
-    pub fn get_arguments(&self) -> &Box<dyn Argument> {
-        &self.arguments
+impl Fill {
+    pub fn get_params(&self) -> &Box<dyn Argument> {
+        &self.params
     }
 }
 
-impl<'a> Ingredient<'a> for Steep<'a> {
+impl Steep {
+    pub fn get_params(&self) -> &Box<dyn Argument> {
+        &self.params
+    }
+}
+
+impl Skim {
+    pub fn get_params(&self) -> &Box<dyn Argument> {
+        &self.params
+    }
+}
+
+impl Pour {
+    pub fn get_params(&self) -> &Box<dyn Argument> {
+        &self.params
+    }
+}
+
+impl<'a> Ingredient<'a> for Steep {
     fn exec(&self, tea: &Box<dyn Tea>) -> Box<dyn Tea> {
-        (self.computation)(tea)
+        (self.computation)(tea, self.get_params())
+    }
+    fn get_name(&self) -> &str {
+        &self.name[..]
+    }
+    fn print(&self) {
+        println!("Current Step: {}", self.get_name());
+    }
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl<'a> Ingredient<'a> for Skim {
+    fn exec(&self, tea: &Box<dyn Tea>) -> Box<dyn Tea> {
+        (self.computation)(tea, self.get_params())
     }
     fn get_name(&self) -> &str {
         &self.name[..]
@@ -80,6 +115,6 @@ impl<'a> Ingredient<'a> for Pour {
         self
     }
     fn exec(&self, tea: &Box<dyn Tea>) -> Box<dyn Tea> {
-        (self.computation)(tea)
+        (self.computation)(tea, self.get_params())
     }
 }

@@ -1,7 +1,7 @@
 extern crate rettle;
 
 use rettle::pot::Pot;
-use rettle::ingredient::{Fill, Steep, Pour};
+use rettle::ingredient::{Fill, Steep, Pour, Argument};
 use rettle::tea::Tea;
 
 use serde::{Deserialize, Serialize};
@@ -36,13 +36,13 @@ fn main() {
     new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
-        computation: Box::new(|| {
+        computation: Box::new(|_args: &Box<dyn Argument>| {
             TextTea::new(Box::new(TextTea::default()))
         }),
     }));
     new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
-        computation: Box::new(|tea: &Box<dyn Tea>| {
+        computation: Box::new(|tea: &Box<dyn Tea>, _args: &Box<dyn Argument>| {
             let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
             let mut new_tea = tea.clone();
             new_tea.x = tea.x - 10000;
@@ -51,7 +51,7 @@ fn main() {
     }));
     new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1"),
-        computation: Box::new(|tea: &Box<dyn Tea>| {
+        computation: Box::new(|tea: &Box<dyn Tea>, _args: &Box<dyn Argument>| {
             println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
             let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
             let same_tea = TextTea { x: tea.x, str_val: String::from(&tea.str_val[..]), y: tea.y };
