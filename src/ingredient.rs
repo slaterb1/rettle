@@ -26,50 +26,50 @@ pub trait Argument {
 pub struct Fill{
     pub source: String,
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Argument>) -> Box<dyn Tea>>,
-    pub params: Box<dyn Argument>,
+    pub computation: Box<Fn(&Option<Box<dyn Argument>>) -> Box<dyn Tea>>,
+    pub params: Option<Box<dyn Argument>>,
 }
 
 pub struct Transfuse;
 
 pub struct Steep {
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Tea>, &Box<dyn Argument>) -> Box<dyn Tea>>, 
-    pub params: Box<dyn Argument>,
+    pub computation: Box<Fn(&Box<dyn Tea>, &Option<Box<dyn Argument>>) -> Box<dyn Tea>>, 
+    pub params: Option<Box<dyn Argument>>,
 }
 
 pub struct Skim {
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Tea>, &Box<dyn Argument>) -> Box<dyn Tea>>, 
-    pub params: Box<dyn Argument>,
+    pub computation: Box<Fn(&Box<dyn Tea>, &Option<Box<dyn Argument>>) -> Box<dyn Tea>>, 
+    pub params: Option<Box<dyn Argument>>,
 }
 
 pub struct Pour{
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Tea>, &Box<dyn Argument>) -> Box<dyn Tea>>, 
-    pub params: Box<dyn Argument>,
+    pub computation: Box<Fn(&Box<dyn Tea>, &Option<Box<dyn Argument>>) -> Box<dyn Tea>>, 
+    pub params: Option<Box<dyn Argument>>,
 }
 
 impl Fill {
-    pub fn get_params(&self) -> &Box<dyn Argument> {
+    pub fn get_params(&self) -> &Option<Box<dyn Argument>> {
         &self.params
     }
 }
 
 impl Steep {
-    pub fn get_params(&self) -> &Box<dyn Argument> {
+    pub fn get_params(&self) -> &Option<Box<dyn Argument>> {
         &self.params
     }
 }
 
 impl Skim {
-    pub fn get_params(&self) -> &Box<dyn Argument> {
+    pub fn get_params(&self) -> &Option<Box<dyn Argument>> {
         &self.params
     }
 }
 
 impl Pour {
-    pub fn get_params(&self) -> &Box<dyn Argument> {
+    pub fn get_params(&self) -> &Option<Box<dyn Argument>> {
         &self.params
     }
 }
