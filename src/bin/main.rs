@@ -31,8 +31,19 @@ impl Tea for TextTea {
     }
 }
 
+pub struct SteepArgs {
+    pub increment: i32,
+}
+
+impl Argument for SteepArgs {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
 fn main() {
     let mut new_pot = Pot::new();
+    let steep_args = SteepArgs { increment: 10000 };
     new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
@@ -43,13 +54,21 @@ fn main() {
     }));
     new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
-        computation: Box::new(|tea: &Box<dyn Tea>, _args: &Option<Box<dyn Argument>>| {
+        computation: Box::new(|tea: &Box<dyn Tea>, args: &Option<Box<dyn Argument>>| {
             let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
             let mut new_tea = tea.clone();
-            new_tea.x = tea.x - 10000;
+            // access params
+            match args {
+                None => panic!("No params passed, not editing object!"),
+                Some(box_args) => {
+                    let box_args = box_args.as_any().downcast_ref::<SteepArgs>().unwrap();
+                    new_tea.x = tea.x - box_args.increment;
+                }
+            }
             Box::new(new_tea)
         }),
-        params: None,
+        params: Some(Box::new(steep_args)),
+        //params: None,
     }));
     new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1"),
