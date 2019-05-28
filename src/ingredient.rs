@@ -13,16 +13,6 @@ pub trait Argument {
     fn as_any(&self) -> &dyn Any;
 }
 
-//impl<'a> PartialEq for &'a Ingredient<'a> {
-//    fn eq(&self, other: &Self) -> bool {
-//        let tea = Tea::new();
-//        if self.exec(&tea) != other.exec(&tea) {
-//            return false;
-//        }
-//        true
-//    }
-//}
-
 pub struct Fill{
     pub source: String,
     pub name: String,
