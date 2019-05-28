@@ -108,3 +108,62 @@ impl<'a> Ingredient<'a> for Pour {
         (self.computation)(tea, self.get_params())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::super::ingredient::{Fill, Steep, Pour, Argument};
+    use super::super::tea::Tea;
+    use super::super::source::Source;
+    use std::any::Any;
+
+    #[derive(Debug, PartialEq, Default)]
+    struct TestTea {
+        x: i32,
+    }
+
+    impl Tea for TestTea {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+        fn new(self: Box<Self>) -> Box<dyn Tea> {
+            Box::new(TestTea::default())
+        }
+    }
+
+    #[derive(Default)]
+    struct TestArgs {
+        pub val: i32
+    }
+
+    impl Argument for TestArgs {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+    }
+
+    #[test]
+    fn create_fill_no_params() {
+        let fill = Fill {
+            name: String::from("test_fill"),
+            source: String::from("text"),
+            computation: Box::new(|_args| {
+                TestTea::new(Box::new(TestTea::default()))
+            }),
+            params: None,
+        };
+        assert_eq!(fill.get_name(), "test_fill");
+    }
+
+    #[test]
+    fn create_fill_with_params() {
+        let fill = Fill {
+            name: String::from("test_fill"),
+            source: String::from("text"),
+            computation: Box::new(|_args| {
+                TestTea::new(Box::new(TestTea::default()))
+            }),
+            params: Some(Box::new(TestArgs { val: 5 })),
+        };
+        assert_eq!(fill.get_name(), "test_fill");
+    }
+}
