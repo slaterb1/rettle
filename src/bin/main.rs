@@ -57,7 +57,9 @@ fn main() {
         computation: Box::new(|tea: &Box<dyn Tea>, args: &Option<Box<dyn Argument>>| {
             let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
             let mut new_tea = tea.clone();
-            // access params
+            // Access params if they exist, optionally User may take other actions in the None arm
+            // if panicking is not desired. Alternatively, box_args can have further match
+            // statements for additional optional fields
             match args {
                 None => panic!("No params passed, not editing object!"),
                 Some(box_args) => {
