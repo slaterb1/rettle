@@ -17,7 +17,7 @@ pub trait Source {
 
 impl Source for Fill {
     fn collect(&self) -> Box<dyn Tea> {
-        (self.computation)()
+        (self.computation)(self.get_params())
     }
     fn get_name(&self) -> &str {
         &self.name[..]
