@@ -56,15 +56,15 @@ impl Brewery {
 
     ///
     /// This function iterates over the brewer's steps to produce the final tea.
-    pub fn make_tea(tea: Box<dyn Tea>, recipe: &Vec<Box<dyn Ingredient>>) {
+    pub fn make_tea(self, mut tea: Box<dyn Tea>, recipe: &Vec<Box<dyn Ingredient>>) {
         for step in recipe.iter() {
             step.print();
             if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
                 println!("Steep operation!");
-                let tea = steep.exec(tea);
+                tea = steep.exec(&tea);
             } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
                 println!("Pour operation!");
-                let tea = pour.exec(tea);
+                tea = pour.exec(&tea);
             }
         }
     }
