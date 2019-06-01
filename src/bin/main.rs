@@ -3,6 +3,7 @@ extern crate rettle;
 use rettle::pot::Pot;
 use rettle::ingredient::{Fill, Steep, Pour, Argument};
 use rettle::tea::Tea;
+use rettle::brewer::Brewery;
 
 use serde::{Deserialize, Serialize};
 use std::any::Any;
@@ -43,18 +44,24 @@ impl Argument for SteepArgs {
 
 fn main() {
     let mut new_pot = Pot::new();
+    let mut brewery = Brewery::new(4);
     let steep_args = SteepArgs { increment: 10000 };
     new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
-        computation: Box::new(|_args: &Option<Box<dyn Argument>>| {
-            TextTea::new(Box::new(TextTea::default()))
+        computation: Box::new(|_args: &Option<Box<dyn Argument>>, brewery: &Brewery, recipe: &Vec<Box<dyn Ingredient>>| {
+            for 0 .. 10 {
+                let tea = TextTea::new(Box::new(TextTea::default()));
+                brewery.take_order(|| {
+                    brewery.make_tea(tea, recipe);
+                });
+            }
         }),
         params: None,
     }));
     new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
-        computation: Box::new(|tea: &Box<dyn Tea>, args: &Option<Box<dyn Argument>>| {
+        computation: Box::new(|tea: Box<dyn Tea>, args: &Option<Box<dyn Argument>>| {
             let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
             let mut new_tea = tea.clone();
             // Access params if they exist, optionally User may take other actions in the None arm
@@ -74,7 +81,7 @@ fn main() {
     }));
     new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1"),
-        computation: Box::new(|tea: &Box<dyn Tea>, _args: &Option<Box<dyn Argument>>| {
+        computation: Box::new(|tea: Box<dyn Tea>, _args: &Option<Box<dyn Argument>>| {
             println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
             let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
             let same_tea = TextTea { x: tea.x, str_val: String::from(&tea.str_val[..]), y: tea.y };

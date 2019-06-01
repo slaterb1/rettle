@@ -1,6 +1,6 @@
 use super::ingredient::{Ingredient, Fill};
 use super::source::Source;
-use super::brewer::Brewer;
+use super::brewer::Brewery;
 
 /// Data Structure that holds the recipe to brew tea (ETL data).
 pub struct Pot<'a> {
@@ -35,14 +35,11 @@ impl<'a> Pot<'a> {
 
     ///
     /// This runs the recipe to transform data.
-    pub fn brew(&self) {
+    pub fn brew(&self, brewery: &Brewery) {
         let source = &self.sources[0]; 
         source.print();
         let fill = source.as_any().downcast_ref::<Fill>().unwrap();
-        let tea = fill.collect();
-        let mut brewer = Brewer::new(tea);
-
-        brewer.make_tea(self.get_recipe());
+        fill.collect(brewery, self.get_recipe());
     }
 }
 

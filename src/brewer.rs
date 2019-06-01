@@ -4,18 +4,30 @@ use std::thread;
 pub use super::tea::Tea;
 pub use super::ingredient::{Ingredient, Steep, Pour};
 
-struct Components<'a> {
-    tea: Box<dyn Tea>,
-    recipe: &'a Vec<Box<dyn Ingredient<'a>>>,
+enum MakeTea {
+    NewOrder(Order),
+    Terminate
 }
 
-struct Brewery<'a> {
+trait FnBox {
+  fn call_box(self: Box<Self>);
+}
+
+impl<F: FnOnce()> FnBox for F {
+  fn call_box(self: Box<F>) {
+    (*self)()
+  }
+}
+
+type Order = Box<FnBox + Send + 'static>;
+
+pub struct Brewery {
     brewers: Vec<Brewer>,
-    sender: mpsc::Sender<Components<'a>>
+    sender: mpsc::Sender<MakeTea>
 }
 
-impl<'a> Brewery<'a> {
-    pub fn new(size: usize) -> Brewery<'a> {
+impl Brewery {
+    pub fn new(size: usize) -> Brewery {
         assert!(size > 0);
 
         let (sender, plain_rx) = mpsc::channel();
@@ -31,54 +43,64 @@ impl<'a> Brewery<'a> {
             sender,
         }
     }
+
+    pub fn take_order<F>(&self, f: F)
+        where F: FnOnce() + Send + 'static
+    {
+        let order = Box::new(f);
+
+        self.sender
+            .send(MakeTea::NewOrder(order))
+            .unwrap()
+    }
+
+    ///
+    /// This function iterates over the brewer's steps to produce the final tea.
+    pub fn make_tea(tea: Box<dyn Tea>, recipe: &Vec<Box<dyn Ingredient>>) {
+        for step in recipe.iter() {
+            step.print();
+            if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
+                println!("Steep operation!");
+                let tea = steep.exec(tea);
+            } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
+                println!("Pour operation!");
+                let tea = pour.exec(tea);
+            }
+        }
+    }
 }
 
 /// Worker that runs the recipe and brew tea.
 struct Brewer {
     id: usize,
     thread: Option<thread::JoinHandle<()>>,
-    tea: Box<dyn Tea>,
 }
 
 impl Brewer {
-    pub fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Components>>>) -> Brewer {
+    pub fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<MakeTea>>>) -> Brewer {
         let thread = thread::spawn(move || {
             loop {
-                let components = receiver.lock()
+                let make_tea = receiver.lock()
                     .unwrap()
                     .recv()
                     .unwrap();
 
-                self.update_brew(components.tea);
-                self.make_tea(components.recipe);
+                match make_tea {
+                    MakeTea::NewOrder(order) => {
+                        println!("Brewer {} received order! Executing...", id);
+                        order.call_box();
+                    },
+                    MakeTea::Terminate => {
+                        println!("Brewer {} was let go...", id);
+                        break;
+                    }
+                }
             }
         });
 
         Brewer { 
             id, 
             thread: Some(thread),
-        }
-    }
-    pub fn get_tea(&self) -> &Box<dyn Tea> {
-        &self.tea
-    }
-    fn update_brew(&mut self, tea: Box<dyn Tea>) {
-        self.tea = tea;
-    }
-    ///
-    /// This function iterates over the brewer's steps to produce the final tea.
-    pub fn make_tea(&mut self, recipe: &Vec<Box<dyn Ingredient>>) {
-        // Save initial state of tea in brewer
-        for step in recipe.iter() {
-            step.print();
-            if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
-                println!("Steep operation!");
-                let tea = steep.exec(self.get_tea());
-                self.update_brew(tea);
-            } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
-                println!("Pour operation!");
-                let _tea = pour.exec(self.get_tea());
-            }
         }
     }
 }
