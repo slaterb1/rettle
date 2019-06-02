@@ -54,20 +54,6 @@ impl Brewery {
             .unwrap()
     }
 
-    ///
-    /// This function iterates over the brewer's steps to produce the final tea.
-    pub fn make_tea(self, mut tea: Box<dyn Tea>, recipe: &Vec<Box<dyn Ingredient>>) {
-        for step in recipe.iter() {
-            step.print();
-            if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
-                println!("Steep operation!");
-                tea = steep.exec(&tea);
-            } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
-                println!("Pour operation!");
-                tea = pour.exec(&tea);
-            }
-        }
-    }
 }
 
 /// Worker that runs the recipe and brew tea.
@@ -101,6 +87,21 @@ impl Brewer {
         Brewer { 
             id, 
             thread: Some(thread),
+        }
+    }
+}
+
+///
+/// This function is passed to the brewer via a thread for it to process the tea.
+pub fn make_tea(mut tea: Box<dyn Tea + Send>, recipe: &Vec<Box<dyn Ingredient + Send>>) {
+    for step in recipe.iter() {
+        step.print();
+        if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
+            println!("Steep operation!");
+            tea = steep.exec(&tea);
+        } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
+            println!("Pour operation!");
+            tea = pour.exec(&tea);
         }
     }
 }

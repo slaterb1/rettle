@@ -4,7 +4,7 @@ use super::brewer::Brewery;
 
 /// Data Structure that holds the recipe to brew tea (ETL data).
 pub struct Pot<'a> {
-    recipe:  Vec<Box<dyn Ingredient<'a>>>,
+    recipe:  Vec<Box<dyn Ingredient<'a> + Send>>,
     sources: Vec<Box<dyn Source>>,
 }
 
@@ -17,7 +17,7 @@ impl<'a> Pot<'a> {
 
     ///
     /// The ingredient is the instruction being added to the brew.
-    pub fn add_ingredient(&mut self, ingredient: Box<dyn Ingredient<'a>>) {
+    pub fn add_ingredient(&mut self, ingredient: Box<dyn Ingredient<'a> + Send>) {
         &self.recipe.push(ingredient);
     }
 
@@ -29,7 +29,7 @@ impl<'a> Pot<'a> {
         &self.sources
     }
 
-    pub fn get_recipe(&self) -> &Vec<Box<dyn Ingredient<'a>>> {
+    pub fn get_recipe(&self) -> &Vec<Box<dyn Ingredient<'a> + Send>> {
         &self.recipe
     }
 

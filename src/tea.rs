@@ -1,7 +1,7 @@
 use std::any::Any;
 
 /// This trait must be given to the data structure(s) that will be processed by the ETL.
-pub trait Tea {
+pub trait Tea: Send {
     /// Helper function that returns Box<dyn Tea> object as `Any`.
     ///
     /// This needs to be defined for the struct inheriting the `Tea` trait due to size not being
@@ -19,6 +19,6 @@ pub trait Tea {
     /// This needs to be created by the Developer to specify how the data coming from the `Fill`
     /// operation will be structured and initialized before being manipulated by the rest of the
     /// `Pot::recipe` steps via the `Brewer::make_tea` method.
-    fn new(self: Box<Self>) -> Box<dyn Tea>;
+    fn new(self: Box<Self>) -> Box<dyn Tea + Send>;
 }
 

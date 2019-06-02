@@ -10,14 +10,14 @@ pub trait Source {
     ///
     /// Currently this outputs Tea, in the future it will pull in all desired data, pushing it in
     /// batches to a source that the Brewers pull from.
-    fn collect(&self, brewer: &Brewery, recipe: &Vec<Box<dyn Ingredient>>);
+    fn collect(&self, brewer: &Brewery, recipe: &Vec<Box<dyn Ingredient + Send>>);
     fn as_any(&self) -> &dyn Any;
     fn print(&self);
     fn get_name(&self) -> &str;
 }
 
 impl Source for Fill {
-    fn collect(&self, brewery: &Brewery, recipe: &Vec<Box<dyn Ingredient>>) {
+    fn collect(&self, brewery: &Brewery, recipe: &Vec<Box<dyn Ingredient + Send>>) {
         (self.computation)(self.get_params(), brewery, recipe)
     }
     fn get_name(&self) -> &str {
