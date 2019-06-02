@@ -49,7 +49,7 @@ fn main() {
     new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
-        computation: Box::new(|_args: &Option<Box<dyn Argument + Send>>, brewery: &Brewery, recipe: &Vec<Box<dyn Ingredient + Send>>| {
+        computation: Box::new(|_args: &Option<Box<dyn Argument + Send>>, brewery: &Brewery, recipe: &Vec<Box<dyn Ingredient + Send + Sync>>| {
             for _ in 0 .. 10 {
                 let tea = TextTea::new(Box::new(TextTea::default()));
                 brewery.take_order(|| {

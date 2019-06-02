@@ -17,7 +17,7 @@ pub trait Argument {
 pub struct Fill{
     pub source: String,
     pub name: String,
-    pub computation: Box<Fn(&Option<Box<dyn Argument + Send>>, &Brewery, &Vec<Box<dyn Ingredient + Send>>)>,
+    pub computation: Box<Fn(&Option<Box<dyn Argument + Send>>, &Brewery, &Vec<Box<dyn Ingredient + Send + Sync>>)>,
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
@@ -64,6 +64,13 @@ impl Pour {
         &self.params
     }
 }
+
+unsafe impl Send for Steep {}
+unsafe impl Sync for Steep {}
+unsafe impl Send for Skim {}
+unsafe impl Sync for Skim {}
+unsafe impl Send for Pour {}
+unsafe impl Sync for Pour {}
 
 impl<'a> Ingredient<'a> for Steep {
     fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send> {

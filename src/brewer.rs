@@ -93,7 +93,7 @@ impl Brewer {
 
 ///
 /// This function is passed to the brewer via a thread for it to process the tea.
-pub fn make_tea(mut tea: Box<dyn Tea + Send>, recipe: &Vec<Box<dyn Ingredient + Send>>) {
+pub fn make_tea(mut tea: Box<dyn Tea + Send>, recipe: &Vec<Box<dyn Ingredient + Send + Sync>>) {
     for step in recipe.iter() {
         step.print();
         if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
