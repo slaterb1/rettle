@@ -4,7 +4,7 @@ use std::thread;
 pub use super::tea::Tea;
 pub use super::ingredient::{Ingredient, Steep, Pour};
 
-enum MakeTea {
+enum OrderTea {
     NewOrder(Order),
     Terminate
 }
@@ -19,11 +19,11 @@ impl<F: FnOnce()> FnBox for F {
   }
 }
 
-type Order = Box<FnBox + Send + 'static>;
+type Order = Box<dyn FnBox + Send + 'static>;
 
 pub struct Brewery {
     brewers: Vec<Brewer>,
-    sender: mpsc::Sender<MakeTea>
+    sender: mpsc::Sender<OrderTea>
 }
 
 impl Brewery {
@@ -50,10 +50,28 @@ impl Brewery {
         let order = Box::new(f);
 
         self.sender
-            .send(MakeTea::NewOrder(order))
+            .send(OrderTea::NewOrder(order))
             .unwrap()
     }
 
+}
+
+impl Drop for Brewery {
+  fn drop(&mut self) {
+    println!("Sending terminate message to all brewers.");
+
+    for _ in &mut self.brewers {
+      self.sender.send(OrderTea::Terminate).unwrap();
+    }
+
+    for brewer in &mut self.brewers {
+      println!("\tLetting go brewer {}", brewer.id);
+
+      if let Some(thread) = brewer.thread.take() {
+        thread.join().unwrap();
+      }
+    }
+  }
 }
 
 /// Worker that runs the recipe and brew tea.
@@ -63,7 +81,7 @@ struct Brewer {
 }
 
 impl Brewer {
-    pub fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<MakeTea>>>) -> Brewer {
+    pub fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<OrderTea>>>) -> Brewer {
         let thread = thread::spawn(move || {
             loop {
                 let make_tea = receiver.lock()
@@ -72,11 +90,11 @@ impl Brewer {
                     .unwrap();
 
                 match make_tea {
-                    MakeTea::NewOrder(order) => {
+                    OrderTea::NewOrder(order) => {
                         println!("Brewer {} received order! Executing...", id);
                         order.call_box();
                     },
-                    MakeTea::Terminate => {
+                    OrderTea::Terminate => {
                         println!("Brewer {} was let go...", id);
                         break;
                     }
