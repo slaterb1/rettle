@@ -1,4 +1,5 @@
 extern crate rettle;
+//extern crate crossbeam_utils;
 
 use rettle::pot::Pot;
 use rettle::ingredient::{Fill, Steep, Pour, Argument, Ingredient};
@@ -7,6 +8,7 @@ use rettle::brewer::{Brewery, make_tea};
 
 use serde::{Deserialize, Serialize};
 use std::any::Any;
+//use crossbeam_utils::sync::WaitGroup;
 
 // Example object that implements the Tea trait
 #[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
@@ -43,6 +45,7 @@ impl Argument for SteepArgs {
 }
 
 fn main() {
+    //let wg = WaitGroup::new();
     let mut new_pot = Pot::new();
     let brewery = Brewery::new(4);
     let steep_args = SteepArgs { increment: 10000 };
@@ -51,9 +54,11 @@ fn main() {
         source: String::from("hardcoded"),
         computation: Box::new(|_args: &Option<Box<dyn Argument + Send>>, brewery: &Brewery, recipe: &Vec<Box<dyn Ingredient + Send + Sync>>| {
             for _ in 0 .. 10 {
+                //let wg = wg.clone();
                 let tea = TextTea::new(Box::new(TextTea::default()));
                 brewery.take_order(|| {
                     make_tea(tea, recipe);
+                    //drop(wg);
                 });
             }
         }),
@@ -91,6 +96,7 @@ fn main() {
     }));
     //new_brewer.update_steps(new_pot.get_recipe());
     new_pot.brew(&brewery);
+    //wg.wait();
     println!("Number of sources: {}", new_pot.get_sources().len());
     println!("Number of steps: {}", new_pot.get_recipe().len());
 }
