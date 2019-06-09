@@ -18,7 +18,7 @@ pub trait Argument {
 pub struct Fill{
     pub source: String,
     pub name: String,
-    pub computation: Box<Fn(&Option<Box<dyn Argument + Send>>, &Brewery, Arc<Mutex<Vec<Box<dyn Ingredient>>>>)>,
+    pub computation: Box<Fn(&Option<Box<dyn Argument + Send>>, &Brewery, Arc<Mutex<Vec<Box<dyn Ingredient + Send>>>>)>,
     pub params: Option<Box<dyn Argument + Send>>,
 }
 

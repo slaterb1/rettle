@@ -8,7 +8,6 @@ use rettle::brewer::{Brewery, make_tea};
 
 use serde::{Deserialize, Serialize};
 use std::any::Any;
-use std::sync::Arc;
 //use crossbeam_utils::sync::WaitGroup;
 
 // Example object that implements the Tea trait

@@ -111,7 +111,7 @@ impl Brewer {
 
 ///
 /// This function is passed to the brewer via a thread for it to process the tea.
-pub fn make_tea(mut tea: Box<dyn Tea + Send>, recipe: Arc<Mutex<Vec<Box<dyn Ingredient>>>>) {
+pub fn make_tea(mut tea: Box<dyn Tea + Send>, recipe: Arc<Mutex<Vec<Box<dyn Ingredient + Send>>>>) {
     let recipe = recipe.lock().unwrap();
     for step in recipe.iter() {
         step.print();

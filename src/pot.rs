@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 
 /// Data Structure that holds the recipe to brew tea (ETL data).
 pub struct Pot<'a> {
-    recipe:  Arc<Mutex<Vec<Box<dyn Ingredient<'a>>>>>,
+    recipe:  Arc<Mutex<Vec<Box<dyn Ingredient<'a> + Send>>>>,
     sources: Vec<Box<dyn Source>>,
 }
 
@@ -19,7 +19,7 @@ impl<'a> Pot<'a> {
 
     ///
     /// The ingredient is the instruction being added to the brew.
-    pub fn add_ingredient(self, ingredient: Box<dyn Ingredient<'a>>) {
+    pub fn add_ingredient(self, ingredient: Box<dyn Ingredient<'a> + Send>) {
         let mut recipe = self.recipe.lock().unwrap();
         recipe.push(ingredient);
     }
@@ -32,7 +32,7 @@ impl<'a> Pot<'a> {
         &self.sources
     }
 
-    pub fn get_recipe(&self) -> Arc<Mutex<Vec<Box<dyn Ingredient<'a>>>>> {
+    pub fn get_recipe(&self) -> Arc<Mutex<Vec<Box<dyn Ingredient<'a> + Send>>>> {
         Arc::clone(&self.recipe)
     }
 
