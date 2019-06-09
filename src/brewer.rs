@@ -1,8 +1,8 @@
+use super::tea::Tea;
+use super::ingredient::{Ingredient, Steep, Pour};
+
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
-
-pub use super::tea::Tea;
-pub use super::ingredient::{Ingredient, Steep, Pour};
 
 enum OrderTea {
     NewOrder(Order),
@@ -111,7 +111,8 @@ impl Brewer {
 
 ///
 /// This function is passed to the brewer via a thread for it to process the tea.
-pub fn make_tea(mut tea: Box<dyn Tea + Send>, recipe: &Vec<Box<dyn Ingredient + Send + Sync>>) {
+pub fn make_tea(mut tea: Box<dyn Tea + Send>, recipe: Arc<Mutex<Vec<Box<dyn Ingredient>>>>) {
+    let recipe = recipe.lock().unwrap();
     for step in recipe.iter() {
         step.print();
         if let Some(steep) = step.as_any().downcast_ref::<Steep>() {

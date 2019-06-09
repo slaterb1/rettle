@@ -8,6 +8,7 @@ use rettle::brewer::{Brewery, make_tea};
 
 use serde::{Deserialize, Serialize};
 use std::any::Any;
+use std::sync::Arc;
 //use crossbeam_utils::sync::WaitGroup;
 
 // Example object that implements the Tea trait
@@ -98,5 +99,5 @@ fn main() {
     new_pot.brew(&brewery);
     //wg.wait();
     println!("Number of sources: {}", new_pot.get_sources().len());
-    println!("Number of steps: {}", new_pot.get_recipe().len());
+    println!("Number of steps: {}", new_pot.get_recipe().lock().unwrap().len());
 }
