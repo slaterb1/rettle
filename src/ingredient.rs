@@ -134,7 +134,7 @@ mod tests {
         fn as_any(&self) -> &dyn Any {
             self
         }
-        fn new(self: Box<Self>) -> Box<dyn Tea> {
+        fn new(self: Box<Self>) -> Box<dyn Tea + Send> {
             Box::new(TestTea::default())
         }
     }
@@ -155,8 +155,8 @@ mod tests {
         let fill = Fill {
             name: String::from("test_fill"),
             source: String::from("text"),
-            computation: Box::new(|_args: &Option<Box<dyn Argument>>| {
-                TestTea::new(Box::new(TestTea::default()))
+            computation: Box::new(|_args, _brewery, _recipe| {
+                TestTea::new(Box::new(TestTea::default()));
             }),
             params: None,
         };
@@ -168,8 +168,8 @@ mod tests {
         let fill = Fill {
             name: String::from("test_fill"),
             source: String::from("text"),
-            computation: Box::new(|_args: &Option<Box<dyn Argument>>| {
-                TestTea::new(Box::new(TestTea::default()))
+            computation: Box::new(|_args, _brewery, _recipe| {
+                TestTea::new(Box::new(TestTea::default()));
             }),
             params: Some(Box::new(TestArgs { val: 5 })),
         };
@@ -180,7 +180,7 @@ mod tests {
     fn create_steep_no_params() {
         let steep = Steep {
             name: String::from("test_steep"),
-            computation: Box::new(|tea: &Box<dyn Tea>, _args: &Option<Box<dyn Argument>>| {
+            computation: Box::new(|tea, _args| {
                 let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
                 let mut new_tea = tea.clone();
                 new_tea.x = tea.x + 5;
@@ -200,7 +200,7 @@ mod tests {
     fn create_steep_with_params() {
         let steep = Steep {
             name: String::from("test_steep"),
-            computation: Box::new(|tea: &Box<dyn Tea>, args: &Option<Box<dyn Argument>>| {
+            computation: Box::new(|tea, args| {
                 let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
                 let mut new_tea = tea.clone();
                 match args {
@@ -226,7 +226,7 @@ mod tests {
     fn create_pour_no_params() {
         let pour = Pour {
             name: String::from("test_pour"),
-            computation: Box::new(|tea: &Box<dyn Tea>, _args: &Option<Box<dyn Argument>>| {
+            computation: Box::new(|tea, _args| {
                 let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
                 let new_tea = tea.clone();
                 println!("Output tea to terminal: {:?}", tea);
@@ -246,7 +246,7 @@ mod tests {
     fn create_pour_with_params() {
         let pour = Pour {
             name: String::from("test_pour"),
-            computation: Box::new(|tea: &Box<dyn Tea>, args: &Option<Box<dyn Argument>>| {
+            computation: Box::new(|tea, args| {
                 let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
                 let new_tea = tea.clone();
                 match args {
