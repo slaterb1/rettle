@@ -53,7 +53,7 @@ fn main() {
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
         computation: Box::new(|_args, brewery, recipe| {
-            let num_iterations = 1000000;
+            let num_iterations = 10000;
             println!("Testing {} iterations", num_iterations);
             for _ in 0 .. num_iterations {
                 let recipe = Arc::clone(&recipe);
