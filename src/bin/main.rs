@@ -1,13 +1,14 @@
 extern crate rettle;
 
 use rettle::pot::Pot;
-use rettle::ingredient::{Fill, Steep, Pour, Argument, Ingredient};
+use rettle::ingredient::{Fill, Steep, Pour, Argument};
 use rettle::tea::Tea;
 use rettle::brewer::{Brewery, make_tea};
 
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::sync::Arc;
+use std::time::Instant;
 
 // Example object that implements the Tea trait
 #[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
@@ -44,14 +45,15 @@ impl Argument for SteepArgs {
 }
 
 fn main() {
+    let start_time = Instant::now();
     let mut new_pot = Pot::new();
-    let brewery = Brewery::new(4);
+    let brewery = Brewery::new(4, start_time);
     let steep_args = SteepArgs { increment: 10000 };
     new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
         computation: Box::new(|_args, brewery, recipe| {
-            for _ in 0 .. 100 {
+            for _ in 0 .. 1000 {
                 let recipe = Arc::clone(&recipe);
                 let tea = TextTea::new(Box::new(TextTea::default()));
                 brewery.take_order(|| {
@@ -83,7 +85,7 @@ fn main() {
     new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1"),
         computation: Box::new(|tea, _args| {
-            println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
+            //println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
             let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
             let same_tea = TextTea { x: tea.x, str_val: String::from(&tea.str_val[..]), y: tea.y };
             Box::new(same_tea)
@@ -92,6 +94,7 @@ fn main() {
     }));
     new_pot.brew(&brewery);
 
+    brewery.get_brewer_info();
     println!("Number of sources: {}", new_pot.get_sources().len());
     println!("Number of steps: {}", new_pot.get_recipe().lock().unwrap().len());
 }
