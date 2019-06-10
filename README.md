@@ -51,7 +51,7 @@ impl Tea for TextTea {
 }
 ```
 
-Next you can create a new `Pot` stuct and supply it with sources and ingredients before calling it's `brew()` method, specify any additional `Argument` trait structs, and a `Brewery` struct specifying the number of `Brewers` and the `start_time`.
+Next you can create a new `Pot` struct and supply it with sources and ingredients before calling it's `brew()` method, specify any additional `Argument` trait structs, and a `Brewery` struct specifying the number of `Brewers` and the `start_time`.
 
 `Fill` operation passes the `Tea` objects to be worked on to the `Brewery` for it to be sent off to the `Brewers` to run the recipe and the brew.
 
