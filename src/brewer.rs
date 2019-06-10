@@ -1,35 +1,132 @@
-pub use super::tea::Tea;
-pub use super::ingredient::{Ingredient, Steep, Pour};
+use super::tea::Tea;
+use super::ingredient::{Ingredient, Steep, Pour};
+
+use std::sync::{mpsc, Arc, Mutex};
+use std::thread;
+use std::time::Instant;
+
+enum OrderTea {
+    NewOrder(Order),
+    Terminate
+}
+
+trait FnBox {
+  fn call_box(self: Box<Self>);
+}
+
+impl<F: FnOnce()> FnBox for F {
+  fn call_box(self: Box<F>) {
+    (*self)()
+  }
+}
+
+type Order = Box<dyn FnBox + Send + 'static>;
+
+pub struct Brewery {
+    brewers: Vec<Brewer>,
+    sender: mpsc::Sender<OrderTea>,
+    start_time: Instant,
+}
+
+impl Brewery {
+    pub fn new(size: usize, start_time: Instant) -> Brewery {
+        assert!(size > 0);
+
+        let (sender, plain_rx) = mpsc::channel();
+        let rx = Arc::new(Mutex::new(plain_rx));
+
+        let mut brewers = Vec::with_capacity(size);
+        for id in 0 .. size {
+            brewers.push(Brewer::new(id, Arc::clone(&rx)));
+        }
+
+        Brewery {
+            brewers,
+            sender,
+            start_time,
+        }
+    }
+
+    pub fn take_order<F>(&self, f: F)
+        where F: FnOnce() + Send + 'static
+    {
+        let order = Box::new(f);
+
+        self.sender
+            .send(OrderTea::NewOrder(order))
+            .unwrap();
+    }
+
+    pub fn get_brewer_info(&self) {
+        println!("Number of brewers: {}", &self.brewers.len());
+    }
+
+}
+
+impl Drop for Brewery {
+  fn drop(&mut self) {
+    println!("Sending terminate message to all brewers.");
+
+    for _ in &mut self.brewers {
+      self.sender.send(OrderTea::Terminate).unwrap();
+    }
+
+    for brewer in &mut self.brewers {
+      println!("\tLetting go brewer {}", brewer.id);
+
+      if let Some(thread) = brewer.thread.take() {
+        thread.join().unwrap();
+      }
+    }
+    println!("Elapsed time: {} ms", self.start_time.elapsed().as_millis());
+  }
+}
 
 /// Worker that runs the recipe and brew tea.
-pub struct Brewer {
-    tea: Box<dyn Tea>,
+struct Brewer {
+    id: usize,
+    thread: Option<thread::JoinHandle<()>>,
 }
 
 impl Brewer {
-    pub fn new(tea: Box<dyn Tea>) -> Brewer {
-        Brewer { tea }
-    }
-    pub fn get_tea(&self) -> &Box<dyn Tea> {
-        &self.tea
-    }
-    fn update_brew(&mut self, tea: Box<dyn Tea>) {
-        self.tea = tea;
-    }
-    ///
-    /// This function iterates over the brewer's steps to produce the final tea.
-    pub fn make_tea(&mut self, recipe: &Vec<Box<Ingredient>>) {
-        // Save initial state of tea in brewer
-        for step in recipe.iter() {
-            step.print();
-            if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
-                println!("Steep operation!");
-                let tea = steep.exec(self.get_tea());
-                self.update_brew(tea);
-            } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
-                println!("Pour operation!");
-                let _tea = pour.exec(self.get_tea());
+    pub fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<OrderTea>>>) -> Brewer {
+        let thread = thread::spawn(move || {
+            loop {
+                let make_tea = receiver.lock()
+                    .unwrap()
+                    .recv()
+                    .unwrap();
+
+                match make_tea {
+                    OrderTea::NewOrder(order) => {
+                        // TODO: Change this to DEBUG logs/
+                        //println!("Brewer {} received order! Executing...", id);
+                        order.call_box();
+                    },
+                    OrderTea::Terminate => {
+                        println!("Brewer {} was let go...", id);
+                        break;
+                    }
+                }
             }
+        });
+
+        Brewer { 
+            id, 
+            thread: Some(thread),
+        }
+    }
+}
+
+///
+/// This function is passed to the brewer via a thread for it to process the tea.
+pub fn make_tea(mut tea: Box<dyn Tea + Send>, recipe: Arc<Mutex<Vec<Box<dyn Ingredient + Send>>>>) {
+    let recipe = recipe.lock().unwrap();
+    for step in recipe.iter() {
+        if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
+            tea = steep.exec(&tea);
+        } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
+            tea = pour.exec(&tea);
         }
     }
 }
@@ -45,4 +142,47 @@ impl Brewer {
 //     } 
 // }
 
+#[cfg(test)]
+mod tests {
+    use super::{Brewery, make_tea};
+    use super::super::tea::Tea;
+    use std::time::Instant;
+    use std::any::Any;
+    use std::sync::{Arc, Mutex};
 
+    #[derive(Debug, PartialEq, Default)]
+    struct TestTea {
+        x: i32,
+    }
+
+    impl Tea for TestTea {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+        fn new(self: Box<Self>) -> Box<dyn Tea + Send> {
+            Box::new(TestTea::default())
+        }
+    }
+
+    #[test]
+    fn create_brewery_with_brewers() {
+        let brewery = Brewery::new(4, Instant::now());
+        assert_eq!(brewery.brewers.len(), 4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn create_brewery_with_no_brewers() {
+        let _brewery = Brewery::new(0, Instant::now());
+    }
+
+    //TODO figure out how to properly test threads
+    //#[test]
+    //fn brewery_sends_job_done_channel() {
+    //    let brewery = Brewery::new(4, Instant::now());
+    //    let tea = TestTea::new(Box::new(TestTea::default()));
+    //    brewery.take_order(|| {
+    //        make_tea(tea, recipe);
+    //    });
+    //}
+}

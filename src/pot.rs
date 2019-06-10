@@ -1,24 +1,27 @@
 use super::ingredient::{Ingredient, Fill};
 use super::source::Source;
-use super::brewer::Brewer;
+use super::brewer::Brewery;
+
+use std::sync::{Arc, Mutex};
 
 /// Data Structure that holds the recipe to brew tea (ETL data).
-pub struct Pot<'a> {
-    recipe:  Vec<Box<dyn Ingredient<'a>>>,
+pub struct Pot {
+    recipe:  Arc<Mutex<Vec<Box<dyn Ingredient + Send>>>>,
     sources: Vec<Box<dyn Source>>,
 }
 
-impl<'a> Pot<'a> {
+impl Pot {
     ///
     /// Initializes Pot with an empty recipe.
-    pub fn new() -> Pot<'a> {
-        Pot { recipe: Vec::new(), sources: Vec::new() }
+    pub fn new() -> Pot {
+        Pot { recipe: Arc::new(Mutex::new(Vec::new())), sources: Vec::new() }
     }
 
     ///
     /// The ingredient is the instruction being added to the brew.
-    pub fn add_ingredient(&mut self, ingredient: Box<dyn Ingredient<'a>>) {
-        &self.recipe.push(ingredient);
+    pub fn add_ingredient(&self, ingredient: Box<dyn Ingredient + Send>) {
+        let mut recipe = self.recipe.lock().unwrap();
+        recipe.push(ingredient);
     }
 
     pub fn add_source(&mut self, source: Box<dyn Source>) {
@@ -29,20 +32,18 @@ impl<'a> Pot<'a> {
         &self.sources
     }
 
-    pub fn get_recipe(&self) -> &Vec<Box<dyn Ingredient<'a>>> {
-        &self.recipe
+    pub fn get_recipe(&self) -> Arc<Mutex<Vec<Box<dyn Ingredient + Send>>>> {
+        Arc::clone(&self.recipe)
     }
 
     ///
     /// This runs the recipe to transform data.
-    pub fn brew(&self) {
+    pub fn brew(&self, brewery: &Brewery) {
+        println!("Brewing Tea...");
         let source = &self.sources[0]; 
         source.print();
         let fill = source.as_any().downcast_ref::<Fill>().unwrap();
-        let tea = fill.collect();
-        let mut brewer = Brewer::new(tea);
-
-        brewer.make_tea(self.get_recipe());
+        fill.collect(brewery, self.get_recipe());
     }
 }
 
@@ -76,7 +77,7 @@ mod tests {
         fn as_any(&self) -> &dyn Any {
             self
         }
-        fn new(self: Box<Self>) -> Box<dyn Tea> {
+        fn new(self: Box<Self>) -> Box<dyn Tea + Send> {
             Box::new(TestTea::default())
         }
     }
@@ -95,7 +96,7 @@ mod tests {
     #[test]
     fn create_empty_pot() {
         let new_pot = Pot::new();
-        assert_eq!(new_pot.get_recipe().len(), 0);
+        assert_eq!(new_pot.get_recipe().lock().unwrap().len(), 0);
     }
 
     #[test]
@@ -104,8 +105,8 @@ mod tests {
         new_pot.add_source(Box::new(Fill{
             name: String::from("fake_tea"),
             source: String::from("hardcoded"),
-            computation: Box::new(|_args| {
-                TestTea::new(Box::new(TestTea::default()))
+            computation: Box::new(|_args, _brewery, _recipe| {
+                TestTea::new(Box::new(TestTea::default()));
             }),
             params: None,
         }));
@@ -115,7 +116,7 @@ mod tests {
 
     #[test]
     fn create_pot_with_recipe() {
-        let mut new_pot = Pot::new();
+        let new_pot = Pot::new();
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
@@ -130,14 +131,14 @@ mod tests {
             }),
             params: None,
         }));
-        assert_eq!(new_pot.get_recipe().len(), 2);
-        assert_eq!(new_pot.get_recipe()[0].get_name(), "steep1");
-        assert_eq!(new_pot.get_recipe()[1].get_name(), "pour1");
+        assert_eq!(new_pot.get_recipe().lock().unwrap().len(), 2);
+        assert_eq!(new_pot.get_recipe().lock().unwrap()[0].get_name(), "steep1");
+        assert_eq!(new_pot.get_recipe().lock().unwrap()[1].get_name(), "pour1");
     }
 
     #[test]
     fn create_pot_with_recipe_and_optional_params() {
-        let mut new_pot = Pot::new();
+        let new_pot = Pot::new();
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
@@ -152,9 +153,9 @@ mod tests {
             }),
             params: None,
         }));
-        assert_eq!(new_pot.get_recipe().len(), 2);
-        assert_eq!(new_pot.get_recipe()[0].get_name(), "steep1");
-        assert_eq!(new_pot.get_recipe()[1].get_name(), "pour1");
+        assert_eq!(new_pot.get_recipe().lock().unwrap().len(), 2);
+        assert_eq!(new_pot.get_recipe().lock().unwrap()[0].get_name(), "steep1");
+        assert_eq!(new_pot.get_recipe().lock().unwrap()[1].get_name(), "pour1");
     }
 
     #[test]
@@ -163,8 +164,8 @@ mod tests {
         new_pot.add_source(Box::new(Fill{
             name: String::from("fake_tea"),
             source: String::from("hardcoded"),
-            computation: Box::new(|_args| {
-                TestTea::new(Box::new(TestTea::default()))
+            computation: Box::new(|_args, _brewery, _recipe| {
+                TestTea::new(Box::new(TestTea::default()));
             }),
             params: None,
         }));
@@ -183,10 +184,10 @@ mod tests {
             params: None,
         }));
         assert_eq!(new_pot.get_sources().len(), 1);
-        assert_eq!(new_pot.get_recipe().len(), 2);
+        assert_eq!(new_pot.get_recipe().lock().unwrap().len(), 2);
         assert_eq!(new_pot.get_sources()[0].get_name(), "fake_tea");
-        assert_eq!(new_pot.get_recipe()[0].get_name(), "steep1");
-        assert_eq!(new_pot.get_recipe()[1].get_name(), "pour1");
+        assert_eq!(new_pot.get_recipe().lock().unwrap()[0].get_name(), "steep1");
+        assert_eq!(new_pot.get_recipe().lock().unwrap()[1].get_name(), "pour1");
     }
 
     //TODO: Readd test after returning Result

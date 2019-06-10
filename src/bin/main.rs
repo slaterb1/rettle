@@ -3,9 +3,12 @@ extern crate rettle;
 use rettle::pot::Pot;
 use rettle::ingredient::{Fill, Steep, Pour, Argument};
 use rettle::tea::Tea;
+use rettle::brewer::{Brewery, make_tea};
 
 use serde::{Deserialize, Serialize};
 use std::any::Any;
+use std::sync::Arc;
+use std::time::Instant;
 
 // Example object that implements the Tea trait
 #[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
@@ -20,7 +23,7 @@ impl Tea for TextTea {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn new(self: Box<Self>) -> Box<dyn Tea> {
+    fn new(self: Box<Self>) -> Box<dyn Tea + Send> {
         let data = r#"{
           "x": 1,
           "str_val": "new_values",
@@ -42,19 +45,29 @@ impl Argument for SteepArgs {
 }
 
 fn main() {
+    let start_time = Instant::now();
     let mut new_pot = Pot::new();
+    let brewery = Brewery::new(4, start_time);
     let steep_args = SteepArgs { increment: 10000 };
     new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
-        computation: Box::new(|_args: &Option<Box<dyn Argument>>| {
-            TextTea::new(Box::new(TextTea::default()))
+        computation: Box::new(|_args, brewery, recipe| {
+            let num_iterations = 10000;
+            println!("Testing {} iterations", num_iterations);
+            for _ in 0 .. num_iterations {
+                let recipe = Arc::clone(&recipe);
+                let tea = TextTea::new(Box::new(TextTea::default()));
+                brewery.take_order(|| {
+                    make_tea(tea, recipe);
+                });
+            }
         }),
         params: None,
     }));
     new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
-        computation: Box::new(|tea: &Box<dyn Tea>, args: &Option<Box<dyn Argument>>| {
+        computation: Box::new(|tea, args| {
             let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
             let mut new_tea = tea.clone();
             // Access params if they exist, optionally User may take other actions in the None arm
@@ -70,20 +83,20 @@ fn main() {
             Box::new(new_tea)
         }),
         params: Some(Box::new(steep_args)),
-        //params: None,
     }));
     new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1"),
-        computation: Box::new(|tea: &Box<dyn Tea>, _args: &Option<Box<dyn Argument>>| {
-            println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
+        computation: Box::new(|tea, _args| {
+            //println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
             let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
             let same_tea = TextTea { x: tea.x, str_val: String::from(&tea.str_val[..]), y: tea.y };
             Box::new(same_tea)
         }),
         params: None,
     }));
-    //new_brewer.update_steps(new_pot.get_recipe());
-    new_pot.brew();
+    new_pot.brew(&brewery);
+
+    brewery.get_brewer_info();
     println!("Number of sources: {}", new_pot.get_sources().len());
-    println!("Number of steps: {}", new_pot.get_recipe().len());
+    println!("Number of steps: {}", new_pot.get_recipe().lock().unwrap().len());
 }
