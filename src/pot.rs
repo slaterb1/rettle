@@ -39,6 +39,7 @@ impl Pot {
     ///
     /// This runs the recipe to transform data.
     pub fn brew(&self, brewery: &Brewery) {
+        println!("Brewing Tea...");
         let source = &self.sources[0]; 
         source.print();
         let fill = source.as_any().downcast_ref::<Fill>().unwrap();
@@ -115,7 +116,7 @@ mod tests {
 
     #[test]
     fn create_pot_with_recipe() {
-        let mut new_pot = Pot::new();
+        let new_pot = Pot::new();
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
@@ -137,7 +138,7 @@ mod tests {
 
     #[test]
     fn create_pot_with_recipe_and_optional_params() {
-        let mut new_pot = Pot::new();
+        let new_pot = Pot::new();
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
