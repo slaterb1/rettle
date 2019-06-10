@@ -4,7 +4,7 @@ use super::tea::Tea;
 use std::any::Any;
 use std::sync::{Arc, Mutex};
 
-pub trait Ingredient<'a> {
+pub trait Ingredient {
     fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send>;
     fn print(&self); 
     fn as_any(&self) -> &dyn Any;
@@ -73,7 +73,7 @@ unsafe impl Sync for Skim {}
 unsafe impl Send for Pour {}
 unsafe impl Sync for Pour {}
 
-impl<'a> Ingredient<'a> for Steep {
+impl Ingredient for Steep {
     fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send> {
         (self.computation)(tea, self.get_params())
     }
@@ -88,7 +88,7 @@ impl<'a> Ingredient<'a> for Steep {
     }
 }
 
-impl<'a> Ingredient<'a> for Skim {
+impl Ingredient for Skim {
     fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send> {
         (self.computation)(tea, self.get_params())
     }
@@ -103,7 +103,7 @@ impl<'a> Ingredient<'a> for Skim {
     }
 }
 
-impl<'a> Ingredient<'a> for Pour {
+impl Ingredient for Pour {
     fn get_name(&self) -> &str {
         &self.name[..]
     }
