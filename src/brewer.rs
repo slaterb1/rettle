@@ -3,6 +3,7 @@ use super::ingredient::{Ingredient, Steep, Pour};
 
 use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
+use std::time::Instant;
 
 enum OrderTea {
     NewOrder(Order),
@@ -23,11 +24,12 @@ type Order = Box<dyn FnBox + Send + 'static>;
 
 pub struct Brewery {
     brewers: Vec<Brewer>,
-    sender: mpsc::Sender<OrderTea>
+    sender: mpsc::Sender<OrderTea>,
+    start_time: Instant,
 }
 
 impl Brewery {
-    pub fn new(size: usize) -> Brewery {
+    pub fn new(size: usize, start_time: Instant) -> Brewery {
         assert!(size > 0);
 
         let (sender, plain_rx) = mpsc::channel();
@@ -41,6 +43,7 @@ impl Brewery {
         Brewery {
             brewers,
             sender,
+            start_time,
         }
     }
 
@@ -51,7 +54,11 @@ impl Brewery {
 
         self.sender
             .send(OrderTea::NewOrder(order))
-            .unwrap()
+            .unwrap();
+    }
+
+    pub fn get_brewer_info(&self) {
+        println!("Number of brewers: {}", &self.brewers.len());
     }
 
 }
@@ -71,6 +78,7 @@ impl Drop for Brewery {
         thread.join().unwrap();
       }
     }
+    println!("Elapsed time: {} ms", self.start_time.elapsed().as_millis());
   }
 }
 
@@ -91,7 +99,8 @@ impl Brewer {
 
                 match make_tea {
                     OrderTea::NewOrder(order) => {
-                        println!("Brewer {} received order! Executing...", id);
+                        // TODO: Change this to DEBUG logs/
+                        //println!("Brewer {} received order! Executing...", id);
                         order.call_box();
                     },
                     OrderTea::Terminate => {
@@ -114,12 +123,9 @@ impl Brewer {
 pub fn make_tea(mut tea: Box<dyn Tea + Send>, recipe: Arc<Mutex<Vec<Box<dyn Ingredient + Send>>>>) {
     let recipe = recipe.lock().unwrap();
     for step in recipe.iter() {
-        step.print();
         if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
-            println!("Steep operation!");
             tea = steep.exec(&tea);
         } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
-            println!("Pour operation!");
             tea = pour.exec(&tea);
         }
     }
@@ -136,4 +142,47 @@ pub fn make_tea(mut tea: Box<dyn Tea + Send>, recipe: Arc<Mutex<Vec<Box<dyn Ingr
 //     } 
 // }
 
+#[cfg(test)]
+mod tests {
+    use super::{Brewery, make_tea};
+    use super::super::tea::Tea;
+    use std::time::Instant;
+    use std::any::Any;
+    use std::sync::{Arc, Mutex};
 
+    #[derive(Debug, PartialEq, Default)]
+    struct TestTea {
+        x: i32,
+    }
+
+    impl Tea for TestTea {
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+        fn new(self: Box<Self>) -> Box<dyn Tea + Send> {
+            Box::new(TestTea::default())
+        }
+    }
+
+    #[test]
+    fn create_brewery_with_brewers() {
+        let brewery = Brewery::new(4, Instant::now());
+        assert_eq!(brewery.brewers.len(), 4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn create_brewery_with_no_brewers() {
+        let _brewery = Brewery::new(0, Instant::now());
+    }
+
+    //TODO figure out how to properly test threads
+    //#[test]
+    //fn brewery_sends_job_done_channel() {
+    //    let brewery = Brewery::new(4, Instant::now());
+    //    let tea = TestTea::new(Box::new(TestTea::default()));
+    //    brewery.take_order(|| {
+    //        make_tea(tea, recipe);
+    //    });
+    //}
+}
