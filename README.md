@@ -51,10 +51,11 @@ impl Tea for TextTea {
 }
 ```
 
-Next you can create a new `Pot` struct and supply it with sources and ingredients before calling it's `brew()` method, specify any additional `Argument` trait structs, and a `Brewery` struct specifying the number of `Brewers` and the `start_time`.
+Next you can create a new `Pot` struct and supply it with sources and ingredients before calling it's `brew()` method to kick off the brewing process. Ingredients can be supplied with Optional `Argument` trait structs to pass additional runtime parameters used by your custom filters. Finally a `Brewery` struct must be created to specify the number of `Brewers` to run the code, and a `start_time` value to provide elapsed run time metrics.
 
-`Fill` operation passes the `Tea` objects to be worked on to the `Brewery` for it to be sent off to the `Brewers` to run the recipe and the brew.
+`Fill` operations collect and pass the `Tea` objects to be worked on to the `Brewery` for it to be processed by the `Brewers`.
 
+### Example Project Code
 ```rust
 fn main() {
     let start_time = Instant::now();
