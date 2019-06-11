@@ -47,7 +47,7 @@ impl Argument for SteepArgs {
 fn main() {
     let start_time = Instant::now();
     let mut new_pot = Pot::new();
-    let brewery = Brewery::new(8, start_time);
+    let brewery = Brewery::new(2, start_time);
     let steep_args = SteepArgs { increment: 10000 };
     new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea"),
