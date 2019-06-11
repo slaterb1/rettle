@@ -2,11 +2,11 @@ use super::ingredient::{Ingredient, Fill};
 use super::source::Source;
 use super::brewer::Brewery;
 
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 /// Data Structure that holds the recipe to brew tea (ETL data).
 pub struct Pot {
-    recipe:  Arc<Mutex<Vec<Box<dyn Ingredient + Send>>>>,
+    recipe:  Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>,
     sources: Vec<Box<dyn Source>>,
 }
 
@@ -14,13 +14,13 @@ impl Pot {
     ///
     /// Initializes Pot with an empty recipe.
     pub fn new() -> Pot {
-        Pot { recipe: Arc::new(Mutex::new(Vec::new())), sources: Vec::new() }
+        Pot { recipe: Arc::new(RwLock::new(Vec::new())), sources: Vec::new() }
     }
 
     ///
     /// The ingredient is the instruction being added to the brew.
-    pub fn add_ingredient(&self, ingredient: Box<dyn Ingredient + Send>) {
-        let mut recipe = self.recipe.lock().unwrap();
+    pub fn add_ingredient(&self, ingredient: Box<dyn Ingredient + Send + Sync>) {
+        let mut recipe = self.recipe.write().unwrap();
         recipe.push(ingredient);
     }
 
@@ -32,7 +32,7 @@ impl Pot {
         &self.sources
     }
 
-    pub fn get_recipe(&self) -> Arc<Mutex<Vec<Box<dyn Ingredient + Send>>>> {
+    pub fn get_recipe(&self) -> Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>> {
         Arc::clone(&self.recipe)
     }
 

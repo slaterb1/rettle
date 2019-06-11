@@ -47,13 +47,13 @@ impl Argument for SteepArgs {
 fn main() {
     let start_time = Instant::now();
     let mut new_pot = Pot::new();
-    let brewery = Brewery::new(4, start_time);
+    let brewery = Brewery::new(8, start_time);
     let steep_args = SteepArgs { increment: 10000 };
     new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
         computation: Box::new(|_args, brewery, recipe| {
-            let num_iterations = 10000;
+            let num_iterations = 1000000;
             println!("Testing {} iterations", num_iterations);
             for _ in 0 .. num_iterations {
                 let recipe = Arc::clone(&recipe);
@@ -98,5 +98,5 @@ fn main() {
 
     brewery.get_brewer_info();
     println!("Number of sources: {}", new_pot.get_sources().len());
-    println!("Number of steps: {}", new_pot.get_recipe().lock().unwrap().len());
+    println!("Number of steps: {}", new_pot.get_recipe().read().unwrap().len());
 }

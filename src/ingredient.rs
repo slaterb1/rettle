@@ -2,7 +2,7 @@ use super::brewer::Brewery;
 use super::tea::Tea;
 
 use std::any::Any;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 pub trait Ingredient {
     fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send>;
@@ -18,7 +18,7 @@ pub trait Argument {
 pub struct Fill{
     pub source: String,
     pub name: String,
-    pub computation: Box<Fn(&Option<Box<dyn Argument + Send>>, &Brewery, Arc<Mutex<Vec<Box<dyn Ingredient + Send>>>>)>,
+    pub computation: Box<Fn(&Option<Box<dyn Argument + Send>>, &Brewery, Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>)>,
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
