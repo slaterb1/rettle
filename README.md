@@ -71,13 +71,13 @@ fn main() {
             let num_iterations = total_data / batch_size;
             println!("Testing {} iterations", total_data);
             for _ in 0 .. num_iterations {
-                let mut tea_box = Vec::with_capacity(batch_size);
+                let mut tea_batch = Vec::with_capacity(batch_size);
                 for _ in 0 .. batch_size {
-                    tea_box.push(TextTea::new(Box::new(TextTea::default())));
+                    tea_batch.push(TextTea::new(Box::new(TextTea::default())));
                 }
                 let recipe = Arc::clone(&recipe);
                 brewery.take_order(|| {
-                    make_tea(tea_box, recipe);
+                    make_tea(tea_batch, recipe);
                 });
             }
         }),
@@ -85,8 +85,8 @@ fn main() {
     }));
     new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
-        computation: Box::new(|tea_box, args| {
-            tea_box.into_iter()
+        computation: Box::new(|tea_batch, args| {
+            tea_batch.into_iter()
                 .map(|tea| {
                     let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
                     let mut new_tea = tea.clone();
@@ -105,8 +105,8 @@ fn main() {
     }));
     new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1"),
-        computation: Box::new(|tea_box, _args| {
-            tea_box.into_iter()
+        computation: Box::new(|tea_batch, _args| {
+            tea_batch.into_iter()
                 .map(|tea| {
                     //println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
                     let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
