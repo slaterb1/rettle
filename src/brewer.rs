@@ -120,7 +120,7 @@ impl Brewer {
 
 ///
 /// This function is passed to the brewer via a thread for it to process the tea.
-pub fn make_tea(mut tea: Box<dyn Tea + Send>, recipe: Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>) {
+pub fn make_tea(mut tea: Vec<Box<dyn Tea + Send>>, recipe: Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>) {
     let recipe = recipe.read().unwrap();
     for step in recipe.iter() {
         if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
@@ -144,11 +144,10 @@ pub fn make_tea(mut tea: Box<dyn Tea + Send>, recipe: Arc<RwLock<Vec<Box<dyn Ing
 
 #[cfg(test)]
 mod tests {
-    use super::{Brewery, make_tea};
+    use super::Brewery;
     use super::super::tea::Tea;
     use std::time::Instant;
     use std::any::Any;
-    use std::sync::{Arc, Mutex};
 
     #[derive(Debug, PartialEq, Default)]
     struct TestTea {

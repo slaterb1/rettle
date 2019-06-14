@@ -5,7 +5,7 @@ use std::any::Any;
 use std::sync::{Arc, RwLock};
 
 pub trait Ingredient {
-    fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send>;
+    fn exec(&self, tea: &Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>>;
     fn print(&self); 
     fn as_any(&self) -> &dyn Any;
     fn get_name(&self) -> &str;
@@ -26,19 +26,19 @@ pub struct Transfuse;
 
 pub struct Steep {
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Tea + Send>, &Option<Box<dyn Argument + Send>>) -> Box<dyn Tea + Send>>, 
+    pub computation: Box<Fn(&Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
 pub struct Skim {
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Tea + Send>, &Option<Box<dyn Argument + Send>>) -> Box<dyn Tea + Send>>, 
+    pub computation: Box<Fn(&Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
 pub struct Pour{
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Tea + Send>, &Option<Box<dyn Argument + Send>>) -> Box<dyn Tea + Send>>, 
+    pub computation: Box<Fn(&Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
@@ -74,7 +74,7 @@ unsafe impl Send for Pour {}
 unsafe impl Sync for Pour {}
 
 impl Ingredient for Steep {
-    fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send> {
+    fn exec(&self, tea: &Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
         (self.computation)(tea, self.get_params())
     }
     fn get_name(&self) -> &str {
@@ -89,7 +89,7 @@ impl Ingredient for Steep {
 }
 
 impl Ingredient for Skim {
-    fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send> {
+    fn exec(&self, tea: &Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
         (self.computation)(tea, self.get_params())
     }
     fn get_name(&self) -> &str {
@@ -113,7 +113,7 @@ impl Ingredient for Pour {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send> {
+    fn exec(&self, tea: &Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
         (self.computation)(tea, self.get_params())
     }
 }
@@ -155,9 +155,7 @@ mod tests {
         let fill = Fill {
             name: String::from("test_fill"),
             source: String::from("text"),
-            computation: Box::new(|_args, _brewery, _recipe| {
-                TestTea::new(Box::new(TestTea::default()));
-            }),
+            computation: Box::new(|_args, _brewery, _recipe| {}),
             params: None,
         };
         assert_eq!(fill.get_name(), "test_fill");
@@ -168,9 +166,7 @@ mod tests {
         let fill = Fill {
             name: String::from("test_fill"),
             source: String::from("text"),
-            computation: Box::new(|_args, _brewery, _recipe| {
-                TestTea::new(Box::new(TestTea::default()));
-            }),
+            computation: Box::new(|_args, _brewery, _recipe| {}),
             params: Some(Box::new(TestArgs { val: 5 })),
         };
         assert_eq!(fill.get_name(), "test_fill");
@@ -181,17 +177,21 @@ mod tests {
         let steep = Steep {
             name: String::from("test_steep"),
             computation: Box::new(|tea, _args| {
-                let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
-                let mut new_tea = tea.clone();
-                new_tea.x = tea.x + 5;
-                Box::new(new_tea)
+                tea.into_iter()
+                   .map(|tea| {
+                       let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
+                       let mut new_tea = tea.clone();
+                       new_tea.x = tea.x + 5;
+                       Box::new(new_tea) as Box<dyn Tea + Send>
+                   })
+                   .collect()
             }),
             params: None,
         };
-        let orig_tea = TestTea::new(Box::new(TestTea::default()));
+        let orig_tea = vec![TestTea::new(Box::new(TestTea::default()))];
         let new_tea = steep.exec(&orig_tea);
-        let orig_tea = orig_tea.as_any().downcast_ref::<TestTea>().unwrap();
-        let new_tea = new_tea.as_any().downcast_ref::<TestTea>().unwrap();
+        let orig_tea = orig_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
+        let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(steep.get_name(), "test_steep");
         assert_eq!(new_tea.x, orig_tea.x + 5);
     }
@@ -201,23 +201,27 @@ mod tests {
         let steep = Steep {
             name: String::from("test_steep"),
             computation: Box::new(|tea, args| {
-                let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
-                let mut new_tea = tea.clone();
-                match args {
-                    None => println!("Nothing"),
-                    Some(box_args) => {
-                        let box_args = box_args.as_any().downcast_ref::<TestArgs>().unwrap();
-                        new_tea.x = tea.x + box_args.val;
-                    }
-                }
-                Box::new(new_tea)
+                tea.into_iter()
+                   .map(|tea| {
+                       let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
+                       let mut new_tea = tea.clone();
+                       match args {
+                           None => println!("Nothing"),
+                           Some(box_args) => {
+                               let box_args = box_args.as_any().downcast_ref::<TestArgs>().unwrap();
+                               new_tea.x = tea.x + box_args.val;
+                           }
+                       }
+                       Box::new(new_tea) as Box<dyn Tea + Send>
+                   })
+                   .collect()
             }),
             params: Some(Box::new(TestArgs { val: 10 })),
         };
-        let orig_tea = TestTea::new(Box::new(TestTea::default()));
+        let orig_tea = vec![TestTea::new(Box::new(TestTea::default()))];
         let new_tea = steep.exec(&orig_tea);
-        let orig_tea = orig_tea.as_any().downcast_ref::<TestTea>().unwrap();
-        let new_tea = new_tea.as_any().downcast_ref::<TestTea>().unwrap();
+        let orig_tea = orig_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
+        let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(steep.get_name(), "test_steep");
         assert_eq!(new_tea.x, orig_tea.x + 10);
     }
@@ -227,17 +231,20 @@ mod tests {
         let pour = Pour {
             name: String::from("test_pour"),
             computation: Box::new(|tea, _args| {
-                let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
-                let new_tea = tea.clone();
-                println!("Output tea to terminal: {:?}", tea);
-                Box::new(new_tea)
+                tea.into_iter()
+                   .map(|tea| {
+                       let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
+                       let new_tea = tea.clone();
+                       Box::new(new_tea) as Box<dyn Tea + Send>
+                   })
+                   .collect()
             }),
             params: None,
         };
-        let orig_tea = TestTea::new(Box::new(TestTea::default()));
+        let orig_tea = vec![TestTea::new(Box::new(TestTea::default()))];
         let new_tea = pour.exec(&orig_tea);
-        let orig_tea = orig_tea.as_any().downcast_ref::<TestTea>().unwrap();
-        let new_tea = new_tea.as_any().downcast_ref::<TestTea>().unwrap();
+        let orig_tea = orig_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
+        let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(pour.get_name(), "test_pour");
         assert_eq!(new_tea.x, orig_tea.x);
     }
@@ -247,23 +254,26 @@ mod tests {
         let pour = Pour {
             name: String::from("test_pour"),
             computation: Box::new(|tea, args| {
-                let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
-                let new_tea = tea.clone();
-                match args {
-                    None => panic!("No params!"),
-                    Some(box_args) => {
-                        let box_args = box_args.as_any().downcast_ref::<TestArgs>().unwrap();
-                        println!("Output tea to terminal, with param: {:?} {}", tea, box_args.val);
-                    }
-                }
-                Box::new(new_tea)
+                tea.into_iter()
+                   .map(|tea| {
+                       let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
+                       let new_tea = tea.clone();
+                       match args {
+                           None => println!("Nothing"),
+                           Some(_box_args) => {
+                               let _box_args = _box_args.as_any().downcast_ref::<TestArgs>().unwrap();
+                           }
+                       }
+                       Box::new(new_tea) as Box<dyn Tea + Send>
+                   })
+                   .collect()
             }),
             params: Some(Box::new(TestArgs { val: 10 })),
         };
-        let orig_tea = TestTea::new(Box::new(TestTea::default()));
+        let orig_tea = vec![TestTea::new(Box::new(TestTea::default()))];
         let new_tea = pour.exec(&orig_tea);
-        let orig_tea = orig_tea.as_any().downcast_ref::<TestTea>().unwrap();
-        let new_tea = new_tea.as_any().downcast_ref::<TestTea>().unwrap();
+        let orig_tea = orig_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
+        let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(pour.get_name(), "test_pour");
         assert_eq!(new_tea.x, orig_tea.x);
     }
