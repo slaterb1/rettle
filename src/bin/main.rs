@@ -53,13 +53,18 @@ fn main() {
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
         computation: Box::new(|_args, brewery, recipe| {
-            let num_iterations = 1000000;
-            println!("Testing {} iterations", num_iterations);
+            let total_data = 1000000;
+            let batch_size = 200;
+            let num_iterations = total_data / batch_size;
+            println!("Testing {} iterations", total_data);
             for _ in 0 .. num_iterations {
+                let mut tea_box = Vec::with_capacity(batch_size);
+                for _ in 0 .. batch_size {
+                    tea_box.push(TextTea::new(Box::new(TextTea::default())));
+                }
                 let recipe = Arc::clone(&recipe);
-                let tea = TextTea::new(Box::new(TextTea::default()));
                 brewery.take_order(|| {
-                    make_tea(tea, recipe);
+                    make_tea(tea_box, recipe);
                 });
             }
         }),
@@ -67,20 +72,25 @@ fn main() {
     }));
     new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
-        computation: Box::new(|tea, args| {
-            let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
-            let mut new_tea = tea.clone();
+        computation: Box::new(|tea_box, args| {
+            let new_tea_box = tea_box.into_iter()
+                .map(|tea| {
+                    let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
+                    let new_tea = tea.clone();
+                    match args {
+                        None => panic!("No params passed, not editing object!"),
+                        Some(box_args) => {
+                            let box_args = box_args.as_any().downcast_ref::<SteepArgs>().unwrap();
+                            new_tea.x = new_tea.x - box_args.increment;
+                        }
+                    }
+                })
+                .collect::<Vec<_>>();
+            //let mut new_tea = tea.clone();
             // Access params if they exist, optionally User may take other actions in the None arm
             // if panicking is not desired. Alternatively, box_args can have further match
             // statements for additional optional fields
-            match args {
-                None => panic!("No params passed, not editing object!"),
-                Some(box_args) => {
-                    let box_args = box_args.as_any().downcast_ref::<SteepArgs>().unwrap();
-                    new_tea.x = tea.x - box_args.increment;
-                }
-            }
-            Box::new(new_tea)
+            Box::new(new_tea_box)
         }),
         params: Some(Box::new(steep_args)),
     }));

@@ -5,7 +5,7 @@ use std::any::Any;
 use std::sync::{Arc, RwLock};
 
 pub trait Ingredient {
-    fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send>;
+    fn exec(&self, tea: &Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>>;
     fn print(&self); 
     fn as_any(&self) -> &dyn Any;
     fn get_name(&self) -> &str;
@@ -26,19 +26,19 @@ pub struct Transfuse;
 
 pub struct Steep {
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Tea + Send>, &Option<Box<dyn Argument + Send>>) -> Box<dyn Tea + Send>>, 
+    pub computation: Box<Fn(&Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
 pub struct Skim {
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Tea + Send>, &Option<Box<dyn Argument + Send>>) -> Box<dyn Tea + Send>>, 
+    pub computation: Box<Fn(&Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
 pub struct Pour{
     pub name: String,
-    pub computation: Box<Fn(&Box<dyn Tea + Send>, &Option<Box<dyn Argument + Send>>) -> Box<dyn Tea + Send>>, 
+    pub computation: Box<Fn(&Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
@@ -74,7 +74,7 @@ unsafe impl Send for Pour {}
 unsafe impl Sync for Pour {}
 
 impl Ingredient for Steep {
-    fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send> {
+    fn exec(&self, tea: &Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
         (self.computation)(tea, self.get_params())
     }
     fn get_name(&self) -> &str {
@@ -89,7 +89,7 @@ impl Ingredient for Steep {
 }
 
 impl Ingredient for Skim {
-    fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send> {
+    fn exec(&self, tea: &Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
         (self.computation)(tea, self.get_params())
     }
     fn get_name(&self) -> &str {
@@ -113,7 +113,7 @@ impl Ingredient for Pour {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn exec(&self, tea: &Box<dyn Tea + Send>) -> Box<dyn Tea + Send> {
+    fn exec(&self, tea: &Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
         (self.computation)(tea, self.get_params())
     }
 }
