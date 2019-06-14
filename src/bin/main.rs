@@ -73,10 +73,10 @@ fn main() {
     new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
         computation: Box::new(|tea_box, args| {
-            let new_tea_box = tea_box.into_iter()
+            tea_box.into_iter()
                 .map(|tea| {
                     let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
-                    let new_tea = tea.clone();
+                    let mut new_tea = tea.clone();
                     match args {
                         None => panic!("No params passed, not editing object!"),
                         Some(box_args) => {
@@ -84,23 +84,23 @@ fn main() {
                             new_tea.x = new_tea.x - box_args.increment;
                         }
                     }
+                    Box::new(new_tea) as Box<dyn Tea + Send>
                 })
-                .collect::<Vec<_>>();
-            //let mut new_tea = tea.clone();
-            // Access params if they exist, optionally User may take other actions in the None arm
-            // if panicking is not desired. Alternatively, box_args can have further match
-            // statements for additional optional fields
-            Box::new(new_tea_box)
+                .collect()
         }),
         params: Some(Box::new(steep_args)),
     }));
     new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1"),
-        computation: Box::new(|tea, _args| {
-            //println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
-            let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
-            let same_tea = TextTea { x: tea.x, str_val: String::from(&tea.str_val[..]), y: tea.y };
-            Box::new(same_tea)
+        computation: Box::new(|tea_box, _args| {
+            tea_box.into_iter()
+                .map(|tea| {
+                    //println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
+                    let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
+                    let same_tea = TextTea { x: tea.x, str_val: String::from(&tea.str_val[..]), y: tea.y };
+                    Box::new(same_tea) as Box<dyn Tea + Send>
+                })
+                .collect()
         }),
         params: None,
     }));
