@@ -96,7 +96,7 @@ mod tests {
     #[test]
     fn create_empty_pot() {
         let new_pot = Pot::new();
-        assert_eq!(new_pot.get_recipe().lock().unwrap().len(), 0);
+        assert_eq!(new_pot.get_recipe().read().unwrap().len(), 0);
     }
 
     #[test]
@@ -120,20 +120,20 @@ mod tests {
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
-                TestTea::new(Box::new(TestTea::default()))
+                vec![TestTea::new(Box::new(TestTea::default()))]
             }),
             params: None,
         }));
         new_pot.add_ingredient(Box::new(Pour{
             name: String::from("pour1"),
             computation: Box::new(|_tea, _args| {
-                TestTea::new(Box::new(TestTea::default()))
+                vec![TestTea::new(Box::new(TestTea::default()))]
             }),
             params: None,
         }));
-        assert_eq!(new_pot.get_recipe().lock().unwrap().len(), 2);
-        assert_eq!(new_pot.get_recipe().lock().unwrap()[0].get_name(), "steep1");
-        assert_eq!(new_pot.get_recipe().lock().unwrap()[1].get_name(), "pour1");
+        assert_eq!(new_pot.get_recipe().read().unwrap().len(), 2);
+        assert_eq!(new_pot.get_recipe().read().unwrap()[0].get_name(), "steep1");
+        assert_eq!(new_pot.get_recipe().read().unwrap()[1].get_name(), "pour1");
     }
 
     #[test]
@@ -142,20 +142,20 @@ mod tests {
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
-                TestTea::new(Box::new(TestTea::default()))
+                vec![TestTea::new(Box::new(TestTea::default()))]
             }),
             params: Some(Box::new(TestArgs::default())),
         }));
         new_pot.add_ingredient(Box::new(Pour{
             name: String::from("pour1"),
             computation: Box::new(|_tea, _args| {
-                TestTea::new(Box::new(TestTea::default()))
+                vec![TestTea::new(Box::new(TestTea::default()))]
             }),
             params: None,
         }));
-        assert_eq!(new_pot.get_recipe().lock().unwrap().len(), 2);
-        assert_eq!(new_pot.get_recipe().lock().unwrap()[0].get_name(), "steep1");
-        assert_eq!(new_pot.get_recipe().lock().unwrap()[1].get_name(), "pour1");
+        assert_eq!(new_pot.get_recipe().read().unwrap().len(), 2);
+        assert_eq!(new_pot.get_recipe().read().unwrap()[0].get_name(), "steep1");
+        assert_eq!(new_pot.get_recipe().read().unwrap()[1].get_name(), "pour1");
     }
 
     #[test]
@@ -172,22 +172,22 @@ mod tests {
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
-                TestTea::new(Box::new(TestTea::default()))
+                vec![TestTea::new(Box::new(TestTea::default()))]
             }),
             params: None,
         }));
         new_pot.add_ingredient(Box::new(Pour{
             name: String::from("pour1"),
             computation: Box::new(|_tea, _args| {
-                TestTea::new(Box::new(TestTea::default()))
+                vec![TestTea::new(Box::new(TestTea::default()))]
             }),
             params: None,
         }));
         assert_eq!(new_pot.get_sources().len(), 1);
-        assert_eq!(new_pot.get_recipe().lock().unwrap().len(), 2);
+        assert_eq!(new_pot.get_recipe().read().unwrap().len(), 2);
         assert_eq!(new_pot.get_sources()[0].get_name(), "fake_tea");
-        assert_eq!(new_pot.get_recipe().lock().unwrap()[0].get_name(), "steep1");
-        assert_eq!(new_pot.get_recipe().lock().unwrap()[1].get_name(), "pour1");
+        assert_eq!(new_pot.get_recipe().read().unwrap()[0].get_name(), "steep1");
+        assert_eq!(new_pot.get_recipe().read().unwrap()[1].get_name(), "pour1");
     }
 
     //TODO: Readd test after returning Result

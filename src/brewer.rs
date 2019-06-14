@@ -144,11 +144,10 @@ pub fn make_tea(mut tea: Vec<Box<dyn Tea + Send>>, recipe: Arc<RwLock<Vec<Box<dy
 
 #[cfg(test)]
 mod tests {
-    use super::{Brewery, make_tea};
+    use super::Brewery;
     use super::super::tea::Tea;
     use std::time::Instant;
     use std::any::Any;
-    use std::sync::{Arc, Mutex};
 
     #[derive(Debug, PartialEq, Default)]
     struct TestTea {
