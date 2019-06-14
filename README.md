@@ -73,10 +73,13 @@ Finally a `Brewery` struct must be created to specify the number of `Brewers` to
 ### Example Project Code
 ```rust
 fn main() {
+    // Initialize variables
     let start_time = Instant::now();
     let mut new_pot = Pot::new();
     let brewery = Brewery::new(2, start_time);
     let steep_args = SteepArgs { increment: 10000 };
+    
+    // Add source to pot
     new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
@@ -98,6 +101,8 @@ fn main() {
         }),
         params: None,
     }));
+    
+    // Add ingredients to pot
     new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
         computation: Box::new(|tea_batch, args| {
@@ -132,8 +137,11 @@ fn main() {
         }),
         params: None,
     }));
+    
+    // Process Tea
     new_pot.brew(&brewery);
-
+    
+    // Display information
     brewery.get_brewer_info();
     println!("Number of sources: {}", new_pot.get_sources().len());
     println!("Number of steps: {}", new_pot.get_recipe().read().unwrap().len());
