@@ -51,7 +51,22 @@ impl Tea for TextTea {
 }
 ```
 
-Next you can create a new `Pot` struct and supply it with sources and ingredients before calling it's `brew()` method to kick off the brewing process. Ingredients can be supplied with Optional `Argument` trait structs to pass additional runtime parameters used by your custom filters. Finally a `Brewery` struct must be created to specify the number of `Brewers` to run the code, and a `start_time` value to provide elapsed run time metrics.
+Next you can create a new `Pot` struct and supply it with sources and ingredients before calling it's `brew()` method to kick off the brewing process. Ingredients can be supplied with Optional `Argument` trait structs to pass additional runtime parameters used by your custom filters. 
+
+Optional Steep Argument Example:
+```rust
+pub struct SteepArgs {
+    pub increment: i32,
+}
+
+impl Argument for SteepArgs {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+```
+
+Finally a `Brewery` struct must be created to specify the number of `Brewers` to run the code, and a `start_time` value to provide elapsed run time metrics.
 
 `Fill` operations collect and pass the `Tea` objects to be worked on to the `Brewery` for it to be processed by the `Brewers`.
 
