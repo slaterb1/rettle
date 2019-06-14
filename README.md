@@ -150,5 +150,5 @@ fn main() {
 
 ## Next Steps
 - Investigate data management/organization strategies for storing Intermediate data transformation structs throughout the ETL process
-- Look into implementing `par_iter()`
 - Further benchmarks for speed processing data as well as comparing against other ETLs (i.e. Logstash, Spark, etc)
+- Implement base Ingredient crates
