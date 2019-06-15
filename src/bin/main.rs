@@ -51,12 +51,33 @@ fn main() {
     let brewery = Brewery::new(2, start_time);
     let steep_args = SteepArgs { increment: 10000 };
     
-    // Add source to pot
+    // Add sources to pot
     new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
         computation: Box::new(|_args, brewery, recipe| {
             let total_data = 1000000;
+            let batch_size = 200;
+            let num_iterations = total_data / batch_size;
+            println!("Testing {} iterations", total_data);
+            for _ in 0 .. num_iterations {
+                let mut tea_batch = Vec::with_capacity(batch_size);
+                for _ in 0 .. batch_size {
+                    tea_batch.push(TextTea::new(Box::new(TextTea::default())));
+                }
+                let recipe = Arc::clone(&recipe);
+                brewery.take_order(|| {
+                    make_tea(tea_batch, recipe);
+                });
+            }
+        }),
+        params: None,
+    }));
+    new_pot.add_source(Box::new(Fill{
+        name: String::from("fake_tea2"),
+        source: String::from("hardcoded"),
+        computation: Box::new(|_args, brewery, recipe| {
+            let total_data = 100000;
             let batch_size = 200;
             let num_iterations = total_data / batch_size;
             println!("Testing {} iterations", total_data);

@@ -40,10 +40,11 @@ impl Pot {
     /// This runs the recipe to transform data.
     pub fn brew(&self, brewery: &Brewery) {
         println!("Brewing Tea...");
-        let source = &self.sources[0]; 
-        source.print();
-        let fill = source.as_any().downcast_ref::<Fill>().unwrap();
-        fill.collect(brewery, self.get_recipe());
+        for source in self.get_sources() {
+            source.print();
+            let fill = source.as_any().downcast_ref::<Fill>().unwrap();
+            fill.collect(brewery, self.get_recipe());
+        }
     }
 }
 
