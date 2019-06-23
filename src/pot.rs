@@ -113,6 +113,7 @@ mod tests {
         }));
         assert_eq!(new_pot.get_sources().len(), 1);
         assert_eq!(new_pot.get_sources()[0].get_name(), "fake_tea");
+        assert_eq!(new_pot.get_sources()[0].get_source(), "hardcoded");
     }
 
     #[test]
@@ -187,6 +188,7 @@ mod tests {
         assert_eq!(new_pot.get_sources().len(), 1);
         assert_eq!(new_pot.get_recipe().read().unwrap().len(), 2);
         assert_eq!(new_pot.get_sources()[0].get_name(), "fake_tea");
+        assert_eq!(new_pot.get_sources()[0].get_source(), "hardcoded");
         assert_eq!(new_pot.get_recipe().read().unwrap()[0].get_name(), "steep1");
         assert_eq!(new_pot.get_recipe().read().unwrap()[1].get_name(), "pour1");
     }

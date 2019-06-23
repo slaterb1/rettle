@@ -15,6 +15,7 @@ pub trait Source {
     fn as_any(&self) -> &dyn Any;
     fn print(&self);
     fn get_name(&self) -> &str;
+    fn get_source(&self) -> &str;
 }
 
 impl Source for Fill {
@@ -23,6 +24,9 @@ impl Source for Fill {
     }
     fn get_name(&self) -> &str {
         &self.name[..]
+    }
+    fn get_source(&self) -> &str {
+        &self.source[..]
     }
     fn print(&self) {
         println!("Current Source: {}", self.get_name());
