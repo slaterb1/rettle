@@ -124,9 +124,9 @@ pub fn make_tea(mut tea: Vec<Box<dyn Tea + Send>>, recipe: Arc<RwLock<Vec<Box<dy
     let recipe = recipe.read().unwrap();
     for step in recipe.iter() {
         if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
-            tea = steep.exec(&tea);
+            tea = steep.exec(tea);
         } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
-            tea = pour.exec(&tea);
+            tea = pour.exec(tea);
         }
     }
 }
