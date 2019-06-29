@@ -101,16 +101,15 @@ fn main() {
         computation: Box::new(|tea_batch, args| {
             tea_batch.into_iter()
                 .map(|tea| {
-                    let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
-                    let mut new_tea = tea.clone();
+                    let mut tea = tea.as_any().downcast_ref::<TextTea>().unwrap().clone();
                     match args {
                         None => panic!("No params passed, not editing object!"),
                         Some(box_args) => {
                             let box_args = box_args.as_any().downcast_ref::<SteepArgs>().unwrap();
-                            new_tea.x = new_tea.x - box_args.increment;
+                            tea.x = tea.x - box_args.increment;
                         }
                     }
-                    Box::new(new_tea) as Box<dyn Tea + Send>
+                    Box::new(tea) as Box<dyn Tea + Send>
                 })
                 .collect()
         }),
@@ -122,9 +121,7 @@ fn main() {
             tea_batch.into_iter()
                 .map(|tea| {
                     //println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
-                    let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
-                    let same_tea = TextTea { x: tea.x, str_val: String::from(&tea.str_val[..]), y: tea.y };
-                    Box::new(same_tea) as Box<dyn Tea + Send>
+                    tea
                 })
                 .collect()
         }),
