@@ -1,5 +1,3 @@
-extern crate rettle;
-
 use rettle::pot::Pot;
 use rettle::ingredient::{Fill, Steep, Pour, Argument};
 use rettle::tea::Tea;
@@ -99,7 +97,8 @@ fn main() {
     new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
         computation: Box::new(|tea_batch, args| {
-            tea_batch.into_iter()
+            tea_batch
+                .into_iter()
                 .map(|tea| {
                     let mut tea = tea.as_any().downcast_ref::<TextTea>().unwrap().clone();
                     match args {

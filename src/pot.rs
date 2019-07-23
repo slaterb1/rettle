@@ -1,6 +1,6 @@
-use super::ingredient::{Ingredient, Fill};
-use super::source::Source;
-use super::brewer::Brewery;
+use crate::ingredient::{Ingredient, Fill};
+use crate::source::Source;
+use crate::brewer::Brewery;
 
 use std::sync::{Arc, RwLock};
 
@@ -47,20 +47,6 @@ impl Pot {
         }
     }
 }
-
-//impl<'a> PartialEq for Pot<'a> {
-//    fn eq(&self, other: &Pot) -> bool {
-//        if self.recipe.len() != other.recipe.len() {
-//            return false;
-//        }
-//        for (i, item) in self.recipe.iter().enumerate() {
-//            if **item != *other.recipe[i] {
-//                return false;
-//            }
-//        }
-//        true
-//    }
-//}
 
 #[cfg(test)]
 mod tests {

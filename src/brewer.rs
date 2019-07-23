@@ -1,5 +1,5 @@
-use super::tea::Tea;
-use super::ingredient::{Ingredient, Steep, Pour};
+use crate::tea::Tea;
+use crate::ingredient::{Ingredient, Steep, Pour};
 
 use std::sync::{mpsc, Arc, Mutex, RwLock};
 use std::thread;

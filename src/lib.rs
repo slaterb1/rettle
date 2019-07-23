@@ -107,7 +107,8 @@ fn main() {
     new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
         computation: Box::new(|tea_batch, args| {
-            tea_batch.into_iter()
+            tea_batch
+                .into_iter()
                 .map(|tea| {
                     let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
                     let mut new_tea = tea.clone();
@@ -127,7 +128,8 @@ fn main() {
     new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1"),
         computation: Box::new(|tea_batch, _args| {
-            tea_batch.into_iter()
+            tea_batch
+                .into_iter()
                 .map(|tea| {
                     //println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
                     let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
