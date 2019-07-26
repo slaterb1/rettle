@@ -189,8 +189,9 @@ mod tests {
             params: None,
         };
         let orig_tea = vec![TestTea::new(Box::new(TestTea::default()))];
-        let new_tea = steep.exec(&orig_tea);
-        let orig_tea = orig_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
+        let orig_tea_copy = vec![TestTea::new(Box::new(TestTea::default()))];
+        let new_tea = steep.exec(orig_tea);
+        let orig_tea = orig_tea_copy[0].as_any().downcast_ref::<TestTea>().unwrap();
         let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(steep.get_name(), "test_steep");
         assert_eq!(new_tea.x, orig_tea.x + 5);
@@ -219,8 +220,9 @@ mod tests {
             params: Some(Box::new(TestArgs { val: 10 })),
         };
         let orig_tea = vec![TestTea::new(Box::new(TestTea::default()))];
-        let new_tea = steep.exec(&orig_tea);
-        let orig_tea = orig_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
+        let orig_tea_copy = vec![TestTea::new(Box::new(TestTea::default()))];
+        let new_tea = steep.exec(orig_tea);
+        let orig_tea = orig_tea_copy[0].as_any().downcast_ref::<TestTea>().unwrap();
         let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(steep.get_name(), "test_steep");
         assert_eq!(new_tea.x, orig_tea.x + 10);
@@ -242,8 +244,9 @@ mod tests {
             params: None,
         };
         let orig_tea = vec![TestTea::new(Box::new(TestTea::default()))];
-        let new_tea = pour.exec(&orig_tea);
-        let orig_tea = orig_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
+        let new_tea = pour.exec(orig_tea);
+        let orig_tea_copy = vec![TestTea::new(Box::new(TestTea::default()))];
+        let orig_tea = orig_tea_copy[0].as_any().downcast_ref::<TestTea>().unwrap();
         let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(pour.get_name(), "test_pour");
         assert_eq!(new_tea.x, orig_tea.x);
@@ -271,8 +274,9 @@ mod tests {
             params: Some(Box::new(TestArgs { val: 10 })),
         };
         let orig_tea = vec![TestTea::new(Box::new(TestTea::default()))];
-        let new_tea = pour.exec(&orig_tea);
-        let orig_tea = orig_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
+        let orig_tea_copy = vec![TestTea::new(Box::new(TestTea::default()))];
+        let new_tea = pour.exec(orig_tea);
+        let orig_tea = orig_tea_copy[0].as_any().downcast_ref::<TestTea>().unwrap();
         let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(pour.get_name(), "test_pour");
         assert_eq!(new_tea.x, orig_tea.x);

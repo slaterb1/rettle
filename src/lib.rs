@@ -24,7 +24,7 @@ rettle has the following Types to be used in any project to "Brew" data:
 In your custom project you first need to define the custom "Tea" struct that will be created by the `Fill` Ingredient.
 
 Example:
-```rust
+```ignore
 pub struct TextTea {
     pub x: i32,
     pub str_val: String,
@@ -35,7 +35,7 @@ pub struct TextTea {
 Plus implement the `Tea` trait methods.
 
 Example:
-```rust
+```ignore
 impl Tea for TextTea {
     fn as_any(&self) -> &dyn Any {
         self
@@ -55,7 +55,7 @@ impl Tea for TextTea {
 Next you can create a new `Pot` struct and supply it with sources and ingredients before calling it's `brew()` method to kick off the brewing process. Ingredients can be supplied with Optional `Argument` trait structs to pass additional runtime parameters used by your custom filters. 
 
 Optional Steep Argument Example:
-```rust
+```ignore
 pub struct SteepArgs {
     pub increment: i32,
 }
@@ -72,7 +72,7 @@ Finally a `Brewery` struct must be created to specify the number of `Brewers` to
 `Fill` operations collect and pass the `Tea` objects to be worked on to the `Brewery` for it to be processed by the `Brewers`.
 
 ### Example Project Code
-```rust
+```ignore
 fn main() {
     // Initialize variables
     let start_time = Instant::now();
