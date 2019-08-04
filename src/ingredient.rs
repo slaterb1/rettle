@@ -18,7 +18,7 @@ pub trait Argument {
 pub struct Fill{
     pub source: String,
     pub name: String,
-    pub computation: Box<Fn(&Option<Box<dyn Argument + Send>>, &Brewery, Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>)>,
+    pub computation: Box<fn(&Option<Box<dyn Argument + Send>>, &Brewery, Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>)>,
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
@@ -26,19 +26,19 @@ pub struct Transfuse;
 
 pub struct Steep {
     pub name: String,
-    pub computation: Box<Fn(Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
+    pub computation: Box<fn(Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
 pub struct Skim {
     pub name: String,
-    pub computation: Box<Fn(Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
+    pub computation: Box<fn(Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
 pub struct Pour{
     pub name: String,
-    pub computation: Box<Fn(Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
+    pub computation: Box<fn(Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
