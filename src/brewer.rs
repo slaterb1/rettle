@@ -158,9 +158,6 @@ mod tests {
         fn as_any(&self) -> &dyn Any {
             self
         }
-        fn new(self: Box<Self>) -> Box<dyn Tea + Send> {
-            Box::new(TestTea::default())
-        }
     }
 
     #[test]
