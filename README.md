@@ -39,15 +39,6 @@ impl Tea for TextTea {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn new(self: Box<Self>) -> Box<dyn Tea> {
-        let data = r#"{
-          "x": 1,
-          "str_val": "new_values",
-          "y": false
-        }"#;
-        let data: TextTea = serde_json::from_str(data).unwrap();
-        Box::new(data)
-    }
 }
 ```
 
@@ -91,7 +82,7 @@ fn main() {
             for _ in 0 .. num_iterations {
                 let mut tea_batch = Vec::with_capacity(batch_size);
                 for _ in 0 .. batch_size {
-                    tea_batch.push(TextTea::new(Box::new(TextTea::default())));
+                    tea_batch.push(Box::new(TextTea::default()) as Box<dyn Tea + Send>);
                 }
                 let recipe = Arc::clone(&recipe);
                 brewery.take_order(|| {
@@ -147,8 +138,3 @@ fn main() {
     println!("Number of steps: {}", new_pot.get_recipe().read().unwrap().len());
 }
 ```
-
-## Next Steps
-- Investigate data management/organization strategies for storing Intermediate data transformation structs throughout the ETL process
-- Further benchmarks for speed processing data as well as comparing against other ETLs (i.e. Logstash, Spark, etc)
-- Implement base Ingredient crates

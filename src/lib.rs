@@ -122,7 +122,7 @@ fn main() {
             tea_batch
                 .into_iter()
                 .map(|tea| {
-                    //println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
+                    println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
                     let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
                     let same_tea = TextTea { x: tea.x, str_val: String::from(&tea.str_val[..]), y: tea.y };
                     Box::new(same_tea) as Box<dyn Tea + Send>
