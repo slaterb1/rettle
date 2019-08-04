@@ -40,15 +40,6 @@ impl Tea for TextTea {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn new(self: Box<Self>) -> Box<dyn Tea> {
-        let data = r#"{
-          "x": 1,
-          "str_val": "new_values",
-          "y": false
-        }"#;
-        let data: TextTea = serde_json::from_str(data).unwrap();
-        Box::new(data)
-    }
 }
 ```
 
@@ -92,7 +83,7 @@ fn main() {
             for _ in 0 .. num_iterations {
                 let mut tea_batch = Vec::with_capacity(batch_size);
                 for _ in 0 .. batch_size {
-                    tea_batch.push(TextTea::new(Box::new(TextTea::default())));
+                    tea_batch.push(Box::new(TextTea::default()) as Box<dyn Tea + Send>);
                 }
                 let recipe = Arc::clone(&recipe);
                 brewery.take_order(|| {
@@ -131,7 +122,7 @@ fn main() {
             tea_batch
                 .into_iter()
                 .map(|tea| {
-                    //println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
+                    println!("Final Tea: {:?}", tea.as_any().downcast_ref::<TextTea>().unwrap());
                     let tea = tea.as_any().downcast_ref::<TextTea>().unwrap();
                     let same_tea = TextTea { x: tea.x, str_val: String::from(&tea.str_val[..]), y: tea.y };
                     Box::new(same_tea) as Box<dyn Tea + Send>

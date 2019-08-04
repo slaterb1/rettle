@@ -64,9 +64,6 @@ mod tests {
         fn as_any(&self) -> &dyn Any {
             self
         }
-        fn new(self: Box<Self>) -> Box<dyn Tea + Send> {
-            Box::new(TestTea::default())
-        }
     }
 
     #[derive(Default)]
@@ -93,7 +90,7 @@ mod tests {
             name: String::from("fake_tea"),
             source: String::from("hardcoded"),
             computation: Box::new(|_args, _brewery, _recipe| {
-                TestTea::new(Box::new(TestTea::default()));
+                Box::new(TestTea::default()) as Box<dyn Tea + Send>;
             }),
             params: None,
         }));
@@ -108,14 +105,14 @@ mod tests {
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
-                vec![TestTea::new(Box::new(TestTea::default()))]
+                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
             }),
             params: None,
         }));
         new_pot.add_ingredient(Box::new(Pour{
             name: String::from("pour1"),
             computation: Box::new(|_tea, _args| {
-                vec![TestTea::new(Box::new(TestTea::default()))]
+                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
             }),
             params: None,
         }));
@@ -130,14 +127,14 @@ mod tests {
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
-                vec![TestTea::new(Box::new(TestTea::default()))]
+                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
             }),
             params: Some(Box::new(TestArgs::default())),
         }));
         new_pot.add_ingredient(Box::new(Pour{
             name: String::from("pour1"),
             computation: Box::new(|_tea, _args| {
-                vec![TestTea::new(Box::new(TestTea::default()))]
+                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
             }),
             params: None,
         }));
@@ -153,21 +150,21 @@ mod tests {
             name: String::from("fake_tea"),
             source: String::from("hardcoded"),
             computation: Box::new(|_args, _brewery, _recipe| {
-                TestTea::new(Box::new(TestTea::default()));
+                Box::new(TestTea::default()) as Box<dyn Tea + Send>;
             }),
             params: None,
         }));
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
-                vec![TestTea::new(Box::new(TestTea::default()))]
+                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
             }),
             params: None,
         }));
         new_pot.add_ingredient(Box::new(Pour{
             name: String::from("pour1"),
             computation: Box::new(|_tea, _args| {
-                vec![TestTea::new(Box::new(TestTea::default()))]
+                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
             }),
             params: None,
         }));

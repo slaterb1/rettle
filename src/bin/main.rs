@@ -21,15 +21,6 @@ impl Tea for TextTea {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn new(self: Box<Self>) -> Box<dyn Tea + Send> {
-        let data = r#"{
-          "x": 1,
-          "str_val": "new_values",
-          "y": false
-        }"#;
-        let data: TextTea = serde_json::from_str(data).unwrap();
-        Box::new(data)
-    }
 }
 
 pub struct SteepArgs {
@@ -61,7 +52,7 @@ fn main() {
             for _ in 0 .. num_iterations {
                 let mut tea_batch = Vec::with_capacity(batch_size);
                 for _ in 0 .. batch_size {
-                    tea_batch.push(TextTea::new(Box::new(TextTea::default())));
+                    tea_batch.push(Box::new(TextTea::default()) as Box<dyn Tea + Send>);
                 }
                 let recipe = Arc::clone(&recipe);
                 brewery.take_order(|| {
@@ -82,7 +73,7 @@ fn main() {
             for _ in 0 .. num_iterations {
                 let mut tea_batch = Vec::with_capacity(batch_size);
                 for _ in 0 .. batch_size {
-                    tea_batch.push(TextTea::new(Box::new(TextTea::default())));
+                    tea_batch.push(Box::new(TextTea::default()) as Box<dyn Tea + Send>);
                 }
                 let recipe = Arc::clone(&recipe);
                 brewery.take_order(|| {
