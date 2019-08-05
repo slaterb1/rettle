@@ -1,20 +1,35 @@
-pub use crate::tea::Tea;
-pub use crate::ingredient::{Fill, Ingredient};
-pub use crate::brewer::Brewery;
+use crate::ingredient::{Fill, Ingredient};
+use crate::brewery::Brewery;
 
 use std::any::Any;
 use std::sync::{Arc, RwLock};
 
 ///
-/// Raw data inputs
+/// Trait given to Box elements added to Pot for pulling in raw data.
 pub trait Source {
     ///
-    /// Currently this outputs Tea, in the future it will pull in all desired data, pushing it in
-    /// batches to a source that the Brewers pull from.
-    fn collect(&self, brewer: &Brewery, recipe: Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>);
+    /// Runs the Fill computation to collect Tea in batches and send to the Brewery for processing.
+    ///
+    /// # Arguments
+    ///
+    /// * `brewery` - Brewery that sends job to process Tea
+    /// * `recipe` - clone of recipe to pass to Brewery
+    fn collect(&self, brewery: &Brewery, recipe: Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>);
+
+    ///
+    /// Used to convert Box<dyn Ingredient> to Any to unwrap Ingredient. 
     fn as_any(&self) -> &dyn Any;
+
+    ///
+    /// Print out current step information.
     fn print(&self);
+
+    ///
+    /// Returns name given to Ingredient.
     fn get_name(&self) -> &str;
+
+    ///
+    /// Returns source given to Ingredient.
     fn get_source(&self) -> &str;
 }
 

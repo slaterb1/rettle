@@ -1,5 +1,5 @@
 # rettle
-This library is a multithreaded ETL (**E**xtract, **T**ransfrom, **L**oad), with inspiration drawn from Keras (https://keras.io/), to allow a "Brew Master" to define any order of operations for data transformations and outputs.
+This library is a multithreaded ETL (**E**xtract, **T**ransfrom, **L**oad), with inspiration drawn from [Keras](https://keras.io/), to allow a "Brew Master" to define any order of operations for data transformations and outputs.
 
 ## Types
 rettle has the following Types to be used in any project to "Brew" data:
@@ -57,7 +57,7 @@ impl Argument for SteepArgs {
 }
 ```
 
-Finally a `Brewery` struct must be created to specify the number of `Brewers` to run the code, and a `start_time` value to provide elapsed run time metrics.
+Finally a `Brewery` struct must be created to specify the number of `Brewers` (threads) to run the code, and a `start_time` value to provide elapsed run time metrics.
 
 `Fill` operations collect and pass the `Tea` objects to be worked on to the `Brewery` for it to be processed by the `Brewers`.
 
@@ -138,3 +138,9 @@ fn main() {
     println!("Number of steps: {}", new_pot.get_recipe().read().unwrap().len());
 }
 ```
+
+### Ingredient Crates
+The community can add Ingredient crates that can be used along with this crate to simplify adding ingredients for common integrations or transformations. Some sample crates include:  
+- [cstea](https://github.com/slaterb1/cstea): Fill/Pour integrations for csv files
+- [elastictea](https://github.com/slaterb1/elastictea): Fill/Pour integrations for Elasticsearch
+- [logtea](https://github.com/slaterb1/logtea): Fill integration for log files
