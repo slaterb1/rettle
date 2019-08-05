@@ -9,10 +9,11 @@ pub trait Tea: Send + Debug {
     /// known at compile time.
     ///
     /// # Example Method Implementation
-    ///
+    /// ```ignore
     /// fn as_any(&self) -> dyn Any {
     ///     self
     /// }
+    /// ```
     fn as_any(&self) -> &dyn Any;
 }
 
