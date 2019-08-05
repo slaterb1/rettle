@@ -160,6 +160,10 @@ impl Brewer {
 /// *`recipe` - read only clone of recipe containing all steps
 pub fn make_tea(mut tea_batch: Vec<Box<dyn Tea + Send>>, recipe: Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>) {
     let recipe = recipe.read().unwrap();
+    // TODO: In the future, Fill will become a valid step in the recipe. For simplicity, this is
+    // excluded at this stage in the project.
+    // TODO: In the future, Tranfuse will become a valid step in the recipe. The Ingredient does not currently
+    // exist, and additional logic may need to be introduced to handle how things are combined.
     for step in recipe.iter() {
         if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
             tea_batch = steep.exec(tea_batch);
@@ -172,7 +176,7 @@ pub fn make_tea(mut tea_batch: Vec<Box<dyn Tea + Send>>, recipe: Arc<RwLock<Vec<
 #[cfg(test)]
 mod tests {
     use super::Brewery;
-    use super::super::tea::Tea;
+    use crate::tea::Tea;
     use std::time::Instant;
     use std::any::Any;
 
