@@ -7,9 +7,24 @@ use std::sync::{Arc, RwLock};
 ///
 /// Trait given to Box elements added to Pot for pulling, processing, or sending data.
 pub trait Ingredient {
+    ///
+    /// Run computation on batch of Tea.
+    ///
+    /// # Arguements
+    ///
+    /// * `tea_batch` - current tea batch to be processed
     fn exec(&self, tea_batch: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>>;
+
+    ///
+    /// Print out current step information.
     fn print(&self); 
+
+    ///
+    /// Used to convert Box<dyn Ingredient> to Any to unwrap Ingredient. 
     fn as_any(&self) -> &dyn Any;
+
+    ///
+    /// Returns name given to Ingredient.
     fn get_name(&self) -> &str;
 }
 
@@ -96,12 +111,6 @@ unsafe impl Send for Pour {}
 unsafe impl Sync for Pour {}
 
 impl Ingredient for Steep {
-    ///
-    /// Run computation on batch of Tea.
-    ///
-    /// # Arguements
-    ///
-    /// *`tea_batch` - current tea batch to be processed
     fn exec(&self, tea_batch: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
         (self.computation)(tea_batch, self.get_params())
     }
@@ -117,12 +126,6 @@ impl Ingredient for Steep {
 }
 
 impl Ingredient for Pour {
-    ///
-    /// Run computation on batch of Tea.
-    ///
-    /// # Arguements
-    ///
-    /// *`tea_batch` - current tea batch to be processed
     fn get_name(&self) -> &str {
         &self.name[..]
     }
@@ -181,6 +184,7 @@ mod tests {
             params: None,
         };
         assert_eq!(fill.get_name(), "test_fill");
+        assert_eq!(fill.get_source(), "text");
     }
 
     #[test]
@@ -192,6 +196,7 @@ mod tests {
             params: Some(Box::new(TestArgs { val: 5 })),
         };
         assert_eq!(fill.get_name(), "test_fill");
+        assert_eq!(fill.get_source(), "text");
     }
 
     #[test]

@@ -156,8 +156,8 @@ impl Brewer {
 ///
 /// # Arguments
 ///
-/// *`tea_batch` - Array of Tea structs to be processed
-/// *`recipe` - read only clone of recipe containing all steps
+/// * `tea_batch` - Array of Tea structs to be processed
+/// * `recipe` - read only clone of recipe containing all steps
 pub fn make_tea(mut tea_batch: Vec<Box<dyn Tea + Send>>, recipe: Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>) {
     let recipe = recipe.read().unwrap();
     // TODO: In the future, Fill will become a valid step in the recipe. For simplicity, this is

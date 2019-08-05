@@ -12,32 +12,50 @@ pub struct Pot {
 
 impl Pot {
     ///
-    /// Initializes Pot with an empty recipe.
+    /// Initializes Pot with an empty recipe and empty sources.
     pub fn new() -> Pot {
         Pot { recipe: Arc::new(RwLock::new(Vec::new())), sources: Vec::new() }
     }
 
     ///
-    /// The ingredient is the instruction being added to the brew.
+    /// Adds Ingredient to recipe held by the Pot.
+    ///
+    /// # Arguments
+    ///
+    /// * `ingredient` - the ingredient to add to the recipe
     pub fn add_ingredient(&self, ingredient: Box<dyn Ingredient + Send + Sync>) {
         let mut recipe = self.recipe.write().unwrap();
         recipe.push(ingredient);
     }
 
+    ///
+    /// Adds Source to sources held by the Pot.
+    ///
+    /// # Arguments
+    ///
+    /// * `source` - the source to add to the sources Array
     pub fn add_source(&mut self, source: Box<dyn Source>) {
         &self.sources.push(source);
     }
 
+    /// 
+    /// Returns the sources held by the Pot.
     pub fn get_sources(&self) -> &Vec<Box<dyn Source>> {
         &self.sources
     }
 
+    /// 
+    /// Returns the recipe held by the Pot.
     pub fn get_recipe(&self) -> Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>> {
         Arc::clone(&self.recipe)
     }
 
     ///
-    /// This runs the recipe to transform data.
+    /// Iterates over sources to pull in data and send jobs to the Brewery for processing.
+    ///
+    /// # Arguments
+    ///
+    /// * `brewery` - Brewery struct holding the receiver and Brewer Array to process Tea
     pub fn brew(&self, brewery: &Brewery) {
         println!("Brewing Tea...");
         for source in self.get_sources() {
