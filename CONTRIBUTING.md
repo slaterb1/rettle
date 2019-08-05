@@ -7,7 +7,7 @@ This has been a passion project over many evenings and weekends to bring the com
 - Look to Ingredient crates (linked to in `README.md` or in community) for *inspiration* as to how I imagine people to use and support this crate.
 
 ## License
-This project uses the MIT license, so contributors to this project MUST agree to it's terms and conditions to be able to submit or request changes in this project.
+This project uses the MIT or Apache-2 license, so contributors to this project MUST agree to their terms and conditions to be able to submit or request changes in this project.
 
 ## Tickets
 Before opening up a new Ticket, please follow these simple rules:  
