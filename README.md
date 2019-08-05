@@ -138,3 +138,9 @@ fn main() {
     println!("Number of steps: {}", new_pot.get_recipe().read().unwrap().len());
 }
 ```
+
+### Ingredient Crates
+The community can add Ingredient crates that can be used along with this crate to simplify adding ingredients for common integrations or transformations. Some sample crates include:  
+- [cstea](https://github.com/slaterb1/cstea): Fill/Pour integrations for csv files
+- [elastictea](https://github.com/slaterb1/elastictea): Fill/Pour integrations for Elasticsearch
+- [logtea](https://github.com/slaterb1/logtea): Fill integration for log files
