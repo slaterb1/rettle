@@ -1,6 +1,6 @@
 /*!
 # rettle
-This library is a multithreaded ETL (**E**xtract, **T**ransfrom, **L**oad), with inspiration drawn from Keras (https://keras.io/), to allow a "Brew Master" to define any order of operations for data transformations and outputs.
+This library is a multithreaded ETL (**E**xtract, **T**ransfrom, **L**oad), with inspiration drawn from [Keras](https://keras.io/), to allow a "Brew Master" to define any order of operations for data transformations and outputs.
 
 ## Types
 rettle has the following Types to be used in any project to "Brew" data:
@@ -58,7 +58,7 @@ impl Argument for SteepArgs {
 }
 ```
 
-Finally a `Brewery` struct must be created to specify the number of `Brewers` to run the code, and a `start_time` value to provide elapsed run time metrics.
+Finally a `Brewery` struct must be created to specify the number of `Brewers` (threads) to run the code, and a `start_time` value to provide elapsed run time metrics.
 
 `Fill` operations collect and pass the `Tea` objects to be worked on to the `Brewery` for it to be processed by the `Brewers`.
 
@@ -141,11 +141,6 @@ fn main() {
     println!("Number of steps: {}", new_pot.get_recipe().read().unwrap().len());
 }
 ```
-
-## Next Steps
-- Investigate data management/organization strategies for storing Intermediate data transformation structs throughout the ETL process
-- Further benchmarks for speed processing data as well as comparing against other ETLs (i.e. Logstash, Spark, etc)
-- Implement base Ingredient crates
 */
 
 pub mod brewer;
