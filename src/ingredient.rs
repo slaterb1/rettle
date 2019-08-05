@@ -1,4 +1,4 @@
-use crate::brewer::Brewery;
+use crate::brewery::Brewery;
 use crate::tea::Tea;
 
 use std::any::Any;

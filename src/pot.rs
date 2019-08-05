@@ -1,6 +1,6 @@
 use crate::ingredient::{Ingredient, Fill};
 use crate::source::Source;
-use crate::brewer::Brewery;
+use crate::brewery::Brewery;
 
 use std::sync::{Arc, RwLock};
 

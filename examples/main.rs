@@ -1,7 +1,7 @@
 use rettle::pot::Pot;
 use rettle::ingredient::{Fill, Steep, Pour, Argument};
 use rettle::tea::Tea;
-use rettle::brewer::{Brewery, make_tea};
+use rettle::brewery::{Brewery, make_tea};
 
 use serde::{Deserialize, Serialize};
 use std::any::Any;

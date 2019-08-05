@@ -1,5 +1,5 @@
 use crate::ingredient::{Fill, Ingredient};
-use crate::brewer::Brewery;
+use crate::brewery::Brewery;
 
 use std::any::Any;
 use std::sync::{Arc, RwLock};

@@ -143,7 +143,7 @@ fn main() {
 ```
 */
 
-pub mod brewer;
+pub mod brewery;
 pub mod tea;
 pub mod ingredient;
 pub mod source;
