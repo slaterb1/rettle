@@ -5,23 +5,29 @@ use std::sync::{mpsc, Arc, Mutex, RwLock};
 use std::thread;
 use std::time::Instant;
 
+/// Types of instructions that can be sent to Brewers.
 enum OrderTea {
     NewOrder(Order),
     Terminate
 }
 
+/// Wrapper to allow sent function in Box to be invokable.
 trait FnBox {
-  fn call_box(self: Box<Self>);
+    /// Method to call inner function.
+    fn call_box(self: Box<Self>);
 }
 
 impl<F: FnOnce()> FnBox for F {
-  fn call_box(self: Box<F>) {
-    (*self)()
-  }
+    /// Calls inner function in box.
+    fn call_box(self: Box<F>) {
+        (*self)()
+    }
 }
 
+/// Type representing the brew function to be implemented on Tea batch with Recipe.
 type Order = Box<dyn FnBox + Send + 'static>;
 
+/// Struct holding the Array of Brewers and sender to push Tea Orders out to them.
 pub struct Brewery {
     brewers: Vec<Brewer>,
     sender: mpsc::Sender<OrderTea>,
@@ -29,6 +35,13 @@ pub struct Brewery {
 }
 
 impl Brewery {
+    ///
+    /// Creates new Brewery with Brewers and sender/receiver pair for passing jobs to them.
+    ///
+    /// # Arguments
+    ///
+    /// * `size` - number of brewers to instantiate
+    /// * `start_time` - program start time to expose runtime metrics
     pub fn new(size: usize, start_time: Instant) -> Brewery {
         assert!(size > 0);
 
@@ -47,6 +60,12 @@ impl Brewery {
         }
     }
 
+    ///
+    /// Send function (job) with batch of Tea with Recipe to Brewers.
+    ///
+    /// # Arguments
+    ///
+    /// * `f` - function to send off to Brewers
     pub fn take_order<F>(&self, f: F)
         where F: FnOnce() + Send + 'static
     {
@@ -57,6 +76,8 @@ impl Brewery {
             .unwrap();
     }
 
+    ///
+    /// Get info method to display number of Brewers assigned to Brewery.
     pub fn get_brewer_info(&self) {
         println!("Number of brewers: {}", &self.brewers.len());
     }
@@ -64,31 +85,43 @@ impl Brewery {
 }
 
 impl Drop for Brewery {
-  fn drop(&mut self) {
-    println!("Sending terminate message to all brewers.");
+    fn drop(&mut self) {
+        // After all jobs are sent terminate message is sent to close out worker pool.
+        println!("Sending terminate message to all brewers.");
 
-    for _ in &mut self.brewers {
-      self.sender.send(OrderTea::Terminate).unwrap();
+        for _ in &mut self.brewers {
+            self.sender.send(OrderTea::Terminate).unwrap();
+        }
+
+        // Run any jobs that have not yet been completed before killing worker.
+        for brewer in &mut self.brewers {
+            println!("\tLetting go brewer {}", brewer.id);
+
+            if let Some(thread) = brewer.thread.take() {
+                thread.join().unwrap();
+            }
+        }
+
+        // Print out run time metrics.
+        println!("Elapsed time: {} ms", self.start_time.elapsed().as_millis());
     }
-
-    for brewer in &mut self.brewers {
-      println!("\tLetting go brewer {}", brewer.id);
-
-      if let Some(thread) = brewer.thread.take() {
-        thread.join().unwrap();
-      }
-    }
-    println!("Elapsed time: {} ms", self.start_time.elapsed().as_millis());
-  }
 }
 
-/// Worker that runs the recipe and brew tea.
+///
+/// Worker that runs the Recipe and brews the batch of Tea.
 struct Brewer {
     id: usize,
     thread: Option<thread::JoinHandle<()>>,
 }
 
 impl Brewer {
+    ///
+    /// Create Brewer worker with receiver to fetch and process Order jobs.
+    ///
+    /// # Arguments
+    ///
+    /// * `id` - brewer number assigned.
+    /// * `reciever` - receiver clone to receive jobs on.
     pub fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<OrderTea>>>) -> Brewer {
         let thread = thread::spawn(move || {
             loop {
@@ -119,28 +152,22 @@ impl Brewer {
 }
 
 ///
-/// This function is passed to the brewer via a thread for it to process the tea.
-pub fn make_tea(mut tea: Vec<Box<dyn Tea + Send>>, recipe: Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>) {
+/// This function is passed to the brewer via a thread for it to process the batch of Tea.
+///
+/// # Arguments
+///
+/// *`tea_batch` - Array of Tea structs to be processed
+/// *`recipe` - read only clone of recipe containing all steps
+pub fn make_tea(mut tea_batch: Vec<Box<dyn Tea + Send>>, recipe: Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>) {
     let recipe = recipe.read().unwrap();
     for step in recipe.iter() {
         if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
-            tea = steep.exec(tea);
+            tea_batch = steep.exec(tea_batch);
         } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
-            tea = pour.exec(tea);
+            tea_batch = pour.exec(tea_batch);
         }
     }
 }
-
-// TODO: implement Debug for Box<dyn Ingredient>
-// impl<'a> fmt::Debug for Brewer<'a> {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         write!(f, 
-//                "Brewer {{ steps: {:?}, tea: {:?} }}", 
-//                self.steps.iter().map(|step| &*step), 
-//                self.tea
-//                )
-//     } 
-// }
 
 #[cfg(test)]
 mod tests {
