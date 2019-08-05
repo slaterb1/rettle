@@ -3,6 +3,9 @@ name = "rettle"
 version = "1.0.0"
 authors = ["Benjamin Slater <benjamin.ed.slater@gmail.com>"]
 edition = "2018"
+readme = "README.md"
+documentation = "https://docs.rs/rettle"
+repository = "https://github.com/slaterb1/rettle"
 description = "A multithreaded ETL with inspiration drawn from Keras."
 license = "MIT OR Apache-2.0"
 
