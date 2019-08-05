@@ -4,38 +4,52 @@ use crate::tea::Tea;
 use std::any::Any;
 use std::sync::{Arc, RwLock};
 
+///
+/// Trait given to Box elements added to Pot for pulling, processing, or sending data.
 pub trait Ingredient {
-    fn exec(&self, tea: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>>;
+    fn exec(&self, tea_batch: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>>;
     fn print(&self); 
     fn as_any(&self) -> &dyn Any;
     fn get_name(&self) -> &str;
 }
 
+///
+/// Trait given to Box elements that add params to Ingredients.
 pub trait Argument {
     fn as_any(&self) -> &dyn Any;
 }
 
-pub struct Fill{
+///
+/// Ingredient used to import or create Tea used in the Pot.
+pub struct Fill {
     pub source: String,
     pub name: String,
     pub computation: Box<fn(&Option<Box<dyn Argument + Send>>, &Brewery, Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>)>,
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
+///
+/// Ingredient used to combine Tea pulled from multiple Fill sources. *Not currently implemented*
 pub struct Transfuse;
 
+///
+/// Ingredient used to transform Tea in the Pot.
 pub struct Steep {
     pub name: String,
     pub computation: Box<fn(Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
+///
+/// Ingredient used to remove fields on Tea in the Pot. *Not currently implemented*
 pub struct Skim {
     pub name: String,
     pub computation: Box<fn(Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
+///
+/// Ingredient used to send Tea to somewhere else.
 pub struct Pour{
     pub name: String,
     pub computation: Box<fn(Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
@@ -43,24 +57,32 @@ pub struct Pour{
 }
 
 impl Fill {
+    ///
+    /// Return params, if any, initialized to this step.
     pub fn get_params(&self) -> &Option<Box<dyn Argument + Send>> {
         &self.params
     }
 }
 
 impl Steep {
+    ///
+    /// Return params, if any, initialized to this step.
     pub fn get_params(&self) -> &Option<Box<dyn Argument + Send>> {
         &self.params
     }
 }
 
 impl Skim {
+    ///
+    /// Return params, if any, initialized to this step.
     pub fn get_params(&self) -> &Option<Box<dyn Argument + Send>> {
         &self.params
     }
 }
 
 impl Pour {
+    ///
+    /// Return params, if any, initialized to this step.
     pub fn get_params(&self) -> &Option<Box<dyn Argument + Send>> {
         &self.params
     }
@@ -74,23 +96,14 @@ unsafe impl Send for Pour {}
 unsafe impl Sync for Pour {}
 
 impl Ingredient for Steep {
-    fn exec(&self, tea: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
-        (self.computation)(tea, self.get_params())
-    }
-    fn get_name(&self) -> &str {
-        &self.name[..]
-    }
-    fn print(&self) {
-        println!("Current Step: {}", self.get_name());
-    }
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-}
-
-impl Ingredient for Skim {
-    fn exec(&self, tea: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
-        (self.computation)(tea, self.get_params())
+    ///
+    /// Run computation on batch of Tea.
+    ///
+    /// # Arguements
+    ///
+    /// *`tea_batch` - current tea batch to be processed
+    fn exec(&self, tea_batch: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
+        (self.computation)(tea_batch, self.get_params())
     }
     fn get_name(&self) -> &str {
         &self.name[..]
@@ -104,6 +117,12 @@ impl Ingredient for Skim {
 }
 
 impl Ingredient for Pour {
+    ///
+    /// Run computation on batch of Tea.
+    ///
+    /// # Arguements
+    ///
+    /// *`tea_batch` - current tea batch to be processed
     fn get_name(&self) -> &str {
         &self.name[..]
     }
@@ -113,10 +132,16 @@ impl Ingredient for Pour {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn exec(&self, tea: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
-        (self.computation)(tea, self.get_params())
+    fn exec(&self, tea_batch: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
+        (self.computation)(tea_batch, self.get_params())
     }
 }
+
+// TODO: Implement Ingredient for Fill (add step plus logic to `brewery::make_tea` function)
+
+// TODO: Implement Ingredient for Skim (add step plus logic to `brewery::make_tea` function)
+
+// TODO: Implement Ingredient for Transfuse (add step plus logic to `brewery::make_tea` function)
 
 #[cfg(test)]
 mod tests {
