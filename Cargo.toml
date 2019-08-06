@@ -1,6 +1,6 @@
 [package]
 name = "rettle"
-version = "1.0.2"
+version = "1.0.3"
 authors = ["Benjamin Slater <benjamin.ed.slater@gmail.com>"]
 edition = "2018"
 readme = "README.md"
@@ -15,5 +15,4 @@ serde_json = "1.0"
 
 [badges]
 travis-ci = { repository = "slaterb1/rettle" }
-coveralls = { repository = "slaterb1/rettle", branch = "master", service = "github" }
 maintenance = { status = "actively-developed" }

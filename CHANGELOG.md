@@ -1,3 +1,6 @@
+## [1.0.3]
+- cleaned up metadata
+
 ## [1.0.2]
 - added travis ci
 - added badges
