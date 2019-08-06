@@ -1,4 +1,12 @@
 # rettle
+
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Build Status](https://travis-ci.com/slaterb1/rettle.svg?branch=master)](https://travis-ci.com/slaterb1/rettle)
+[![Coverage Status](https://coveralls.io/repos/slaterb1/rettle/badge.svg?branch=master)](https://coveralls.io/r/slaterb1/rettle?branch=master)
+[![Crates.io Version](https://img.shields.io/crates/v/rettle.svg)](https://crates.io/crates/rettle)
+[![Minimum rustc version](https://img.shields.io/badge/rustc-1.31.0+-lightgray.svg)](#rust-version-requirements)
+
 This library is a multithreaded ETL (**E**xtract, **T**ransfrom, **L**oad), with inspiration drawn from [Keras](https://keras.io/), to allow a "Brew Master" to define any order of operations for data transformations and outputs.
 
 ## Types
