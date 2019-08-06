@@ -144,9 +144,9 @@ fn main() {
 
 ### Ingredient Crates
 The community can add Ingredient crates that can be used along with this crate to simplify adding ingredients for common integrations or transformations. Some sample crates include:  
-- [cstea](https://github.com/slaterb1/cstea): Fill/Pour integrations for csv files
-- [elastictea](https://github.com/slaterb1/elastictea): Fill/Pour integrations for Elasticsearch
-- [logtea](https://github.com/slaterb1/logtea): Fill integration for log files
+- [cstea](https://crates.io/crates/cstea): Fill/Pour integrations for csv files
+- [elastictea](https://crates.io/crates/elastictea): Fill/Pour integrations for Elasticsearch
+- [logtea](https://crates.io/crates/logtea): Fill integration for log files
 */
 
 pub mod brewery;

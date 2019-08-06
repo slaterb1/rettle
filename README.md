@@ -1,4 +1,12 @@
 # rettle
+
+[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Build Status](https://travis-ci.com/slaterb1/rettle.svg?branch=master)](https://travis-ci.com/slaterb1/rettle)
+[![Coverage Status](https://coveralls.io/repos/slaterb1/rettle/badge.svg?branch=master)](https://coveralls.io/r/slaterb1/rettle?branch=master)
+[![Crates.io Version](https://img.shields.io/crates/v/rettle.svg)](https://crates.io/crates/rettle)
+[![Minimum rustc version](https://img.shields.io/badge/rustc-1.35.0+-lightgray.svg)](#rust-version-requirements)
+
 This library is a multithreaded ETL (**E**xtract, **T**ransfrom, **L**oad), with inspiration drawn from [Keras](https://keras.io/), to allow a "Brew Master" to define any order of operations for data transformations and outputs.
 
 ## Types
@@ -141,6 +149,6 @@ fn main() {
 
 ### Ingredient Crates
 The community can add Ingredient crates that can be used along with this crate to simplify adding ingredients for common integrations or transformations. Some sample crates include:  
-- [cstea](https://github.com/slaterb1/cstea): Fill/Pour integrations for csv files
-- [elastictea](https://github.com/slaterb1/elastictea): Fill/Pour integrations for Elasticsearch
-- [logtea](https://github.com/slaterb1/logtea): Fill integration for log files
+- [cstea](https://crates.io/crates/cstea): Fill/Pour integrations for csv files
+- [elastictea](https://crates.io/crates/elastictea): Fill/Pour integrations for Elasticsearch
+- [logtea](https://crates.io/crates/logtea): Fill integration for log files
