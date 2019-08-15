@@ -1,5 +1,5 @@
 use crate::tea::Tea;
-use crate::ingredient::{Ingredient, Steep, Pour};
+use crate::ingredient::{Ingredient, Steep, Skim, Pour};
 
 use std::sync::{mpsc, Arc, Mutex, RwLock};
 use std::thread;
@@ -167,6 +167,8 @@ pub fn make_tea(mut tea_batch: Vec<Box<dyn Tea + Send>>, recipe: Arc<RwLock<Vec<
     for step in recipe.iter() {
         if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
             tea_batch = steep.exec(tea_batch);
+        } else if let Some(skim) = step.as_any().downcast_ref::<Skim>() {
+            tea_batch = skim.exec(tea_batch);
         } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
             tea_batch = pour.exec(tea_batch);
         }
