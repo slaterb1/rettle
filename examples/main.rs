@@ -146,7 +146,11 @@ fn main() {
                         None => panic!("No params passed, not editing object!"),
                         Some(box_args) => {
                             let box_args = box_args.as_any().downcast_ref::<SteepArgs>().unwrap();
-                            tea.x = Some(tea.x.unwrap() - box_args.increment);
+                            let new_val: Option<i32> = match tea.x {
+                                Some(x) => Some(x - box_args.increment),
+                                None => None
+                            };
+                            tea.x = new_val
                         }
                     }
                     Box::new(tea) as Box<dyn Tea + Send>
