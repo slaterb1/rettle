@@ -141,8 +141,8 @@ impl Ingredient for Pour {
 }
 
 // TODO: Implement Ingredient for Fill (add step plus logic to `brewery::make_tea` function)
+// Need to consider if this still makes sense as an Ingredient in the recipe vs just a source...
 
-// TODO: Implement Ingredient for Skim (add step plus logic to `brewery::make_tea` function)
 impl Ingredient for Skim {
     fn get_name(&self) -> &str {
         &self.name[..]
