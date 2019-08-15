@@ -233,10 +233,9 @@ mod tests {
                    .map(|tea| {
                        let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
                        let mut new_tea = tea.clone();
-                       let new_val: Option<i32>;
-                       match new_tea.x {
-                           Some(x) => new_val = Some(x + 5),
-                           None => new_val = None
+                       let new_val = match new_tea.x {
+                           Some(x) => Some(x + 5),
+                           None => None
                        };
                        new_tea.x = new_val;
                        Box::new(new_tea) as Box<dyn Tea + Send>
@@ -267,10 +266,9 @@ mod tests {
                            None => println!("Nothing"),
                            Some(box_args) => {
                                let box_args = box_args.as_any().downcast_ref::<TestArgs>().unwrap();
-                               let new_val: Option<i32>;
-                               match new_tea.x {
-                                   Some(x) => new_val = Some(x + box_args.val),
-                                   None => new_val = None
+                               let new_val: Option<i32> = match new_tea.x {
+                                   Some(x) => Some(x + box_args.val),
+                                   None => None
                                };
                                new_tea.x = new_val;
                            }
