@@ -5,15 +5,15 @@ use crate::brewery::Brewery;
 use std::sync::{Arc, RwLock};
 
 /// Data Structure that holds the recipe to brew tea (ETL data).
-pub struct Pot {
-    recipe:  Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>,
-    sources: Vec<Box<dyn Source>>,
+pub struct Pot<T: Send> {
+    recipe:  Arc<RwLock<Vec<Box<dyn Ingredient<T> + Send + Sync>>>>,
+    sources: Vec<Box<dyn Source<T>>>,
 }
 
-impl Pot {
+impl<T: Send + 'static> Pot<T> {
     ///
     /// Initializes Pot with an empty recipe and empty sources.
-    pub fn new() -> Pot {
+    pub fn new() -> Pot<T> {
         Pot { recipe: Arc::new(RwLock::new(Vec::new())), sources: Vec::new() }
     }
 
@@ -23,7 +23,7 @@ impl Pot {
     /// # Arguments
     ///
     /// * `ingredient` - the ingredient to add to the recipe
-    pub fn add_ingredient(&self, ingredient: Box<dyn Ingredient + Send + Sync>) {
+    pub fn add_ingredient(&self, ingredient: Box<dyn Ingredient<T> + Send + Sync>) {
         let mut recipe = self.recipe.write().unwrap();
         recipe.push(ingredient);
     }
@@ -34,19 +34,19 @@ impl Pot {
     /// # Arguments
     ///
     /// * `source` - the source to add to the sources Array
-    pub fn add_source(&mut self, source: Box<dyn Source>) {
+    pub fn add_source(&mut self, source: Box<dyn Source<T>>) {
         &self.sources.push(source);
     }
 
     /// 
     /// Returns the sources held by the Pot.
-    pub fn get_sources(&self) -> &Vec<Box<dyn Source>> {
+    pub fn get_sources(&self) -> &Vec<Box<dyn Source<T>>> {
         &self.sources
     }
 
     /// 
     /// Returns the recipe held by the Pot.
-    pub fn get_recipe(&self) -> Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>> {
+    pub fn get_recipe(&self) -> Arc<RwLock<Vec<Box<dyn Ingredient<T> + Send + Sync>>>> {
         Arc::clone(&self.recipe)
     }
 
@@ -60,7 +60,7 @@ impl Pot {
         println!("Brewing Tea...");
         for source in self.get_sources() {
             source.print();
-            let fill = source.as_any().downcast_ref::<Fill>().unwrap();
+            let fill = source.as_any().downcast_ref::<Fill<T>>().unwrap();
             fill.collect(brewery, self.get_recipe());
         }
     }

@@ -1,19 +1,18 @@
 use crate::brewery::Brewery;
-use crate::tea::Tea;
 
 use std::any::Any;
 use std::sync::{Arc, RwLock};
 
 ///
 /// Trait given to Box elements added to Pot for pulling, processing, or sending data.
-pub trait Ingredient {
+pub trait Ingredient<T: Send> {
     ///
     /// Run computation on batch of Tea.
     ///
     /// # Arguements
     ///
     /// * `tea_batch` - current tea batch to be processed
-    fn exec(&self, tea_batch: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>>;
+    fn exec(&self, tea_batch: Vec<T>) -> Vec<T>;
 
     ///
     /// Print out current step information.
@@ -36,10 +35,10 @@ pub trait Argument {
 
 ///
 /// Ingredient used to import or create Tea used in the Pot.
-pub struct Fill {
+pub struct Fill<T: Send> {
     pub source: String,
     pub name: String,
-    pub computation: Box<fn(&Option<Box<dyn Argument + Send>>, &Brewery, Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>)>,
+    pub computation: Box<fn(&Option<Box<dyn Argument + Send>>, &Brewery, Arc<RwLock<Vec<Box<dyn Ingredient<T> + Send + Sync>>>>)>,
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
@@ -49,29 +48,29 @@ pub struct Transfuse;
 
 ///
 /// Ingredient used to transform Tea in the Pot.
-pub struct Steep {
+pub struct Steep<T: Send> {
     pub name: String,
-    pub computation: Box<fn(Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
+    pub computation: Box<fn(Vec<T>, &Option<Box<dyn Argument + Send>>) -> Vec<T>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
 ///
 /// Ingredient used to remove fields on Tea in the Pot. *Not currently implemented*
-pub struct Skim {
+pub struct Skim<T: Send> {
     pub name: String,
-    pub computation: Box<fn(Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
+    pub computation: Box<fn(Vec<T>, &Option<Box<dyn Argument + Send>>) -> Vec<T>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
 ///
 /// Ingredient used to send Tea to somewhere else.
-pub struct Pour{
+pub struct Pour<T: Send> {
     pub name: String,
-    pub computation: Box<fn(Vec<Box<dyn Tea + Send>>, &Option<Box<dyn Argument + Send>>) -> Vec<Box<dyn Tea + Send>>>, 
+    pub computation: Box<fn(Vec<T>, &Option<Box<dyn Argument + Send>>) -> Vec<T>>, 
     pub params: Option<Box<dyn Argument + Send>>,
 }
 
-impl Fill {
+impl<T: Send> Fill<T> {
     ///
     /// Return params, if any, initialized to this step.
     pub fn get_params(&self) -> &Option<Box<dyn Argument + Send>> {
@@ -79,7 +78,7 @@ impl Fill {
     }
 }
 
-impl Steep {
+impl<T: Send> Steep<T> {
     ///
     /// Return params, if any, initialized to this step.
     pub fn get_params(&self) -> &Option<Box<dyn Argument + Send>> {
@@ -87,7 +86,7 @@ impl Steep {
     }
 }
 
-impl Skim {
+impl<T: Send> Skim<T> {
     ///
     /// Return params, if any, initialized to this step.
     pub fn get_params(&self) -> &Option<Box<dyn Argument + Send>> {
@@ -95,7 +94,7 @@ impl Skim {
     }
 }
 
-impl Pour {
+impl<T: Send> Pour<T> {
     ///
     /// Return params, if any, initialized to this step.
     pub fn get_params(&self) -> &Option<Box<dyn Argument + Send>> {
@@ -103,15 +102,15 @@ impl Pour {
     }
 }
 
-unsafe impl Send for Steep {}
-unsafe impl Sync for Steep {}
-unsafe impl Send for Skim {}
-unsafe impl Sync for Skim {}
-unsafe impl Send for Pour {}
-unsafe impl Sync for Pour {}
+unsafe impl<T: Send> Send for Steep<T> {}
+unsafe impl<T: Send>  Sync for Steep<T> {}
+unsafe impl<T: Send>  Send for Skim<T>{}
+unsafe impl<T: Send>  Sync for Skim<T> {}
+unsafe impl<T: Send>  Send for Pour<T> {}
+unsafe impl<T: Send>  Sync for Pour<T> {}
 
-impl Ingredient for Steep {
-    fn exec(&self, tea_batch: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
+impl<T: Send + 'static> Ingredient<T> for Steep<T> {
+    fn exec(&self, tea_batch: Vec<T>) -> Vec<T> {
         (self.computation)(tea_batch, self.get_params())
     }
     fn get_name(&self) -> &str {
@@ -125,7 +124,7 @@ impl Ingredient for Steep {
     }
 }
 
-impl Ingredient for Pour {
+impl<T: Send + 'static>  Ingredient<T> for Pour<T> {
     fn get_name(&self) -> &str {
         &self.name[..]
     }
@@ -135,7 +134,7 @@ impl Ingredient for Pour {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn exec(&self, tea_batch: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
+    fn exec(&self, tea_batch: Vec<T>) -> Vec<T> {
         (self.computation)(tea_batch, self.get_params())
     }
 }
@@ -143,7 +142,7 @@ impl Ingredient for Pour {
 // TODO: Implement Ingredient for Fill (add step plus logic to `brewery::make_tea` function)
 // Need to consider if this still makes sense as an Ingredient in the recipe vs just a source...
 
-impl Ingredient for Skim {
+impl<T: Send + 'static>  Ingredient<T> for Skim<T>  {
     fn get_name(&self) -> &str {
         &self.name[..]
     }
@@ -153,7 +152,7 @@ impl Ingredient for Skim {
     fn as_any(&self) -> &dyn Any {
         self
     }
-    fn exec(&self, tea_batch: Vec<Box<dyn Tea + Send>>) -> Vec<Box<dyn Tea + Send>> {
+    fn exec(&self, tea_batch: Vec<T>) -> Vec<T> {
         (self.computation)(tea_batch, self.get_params())
     }
 }

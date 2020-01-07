@@ -158,6 +158,5 @@ pub mod pot;
 // Re-export main structs and Traits for API convenience.
 pub use self::pot::Pot;
 pub use self::brewery::{Brewery, make_tea};
-pub use self::tea::Tea;
 pub use self::ingredient::{Fill, Steep, Pour, Argument, Ingredient};
 pub use self::source::Source;

@@ -1,4 +1,3 @@
-use crate::tea::Tea;
 use crate::ingredient::{Ingredient, Steep, Skim, Pour};
 
 use std::sync::{mpsc, Arc, Mutex, RwLock};
@@ -158,18 +157,18 @@ impl Brewer {
 ///
 /// * `tea_batch` - Array of Tea structs to be processed
 /// * `recipe` - read only clone of recipe containing all steps
-pub fn make_tea(mut tea_batch: Vec<Box<dyn Tea + Send>>, recipe: Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>) {
+pub fn make_tea<T: Send + 'static>(mut tea_batch: Vec<T>, recipe: Arc<RwLock<Vec<Box<dyn Ingredient<T> + Send + Sync>>>>) {
     let recipe = recipe.read().unwrap();
     // TODO: In the future, Fill will become a valid step in the recipe. For simplicity, this is
     // excluded at this stage in the project.
     // TODO: In the future, Tranfuse will become a valid step in the recipe. The Ingredient does not currently
     // exist, and additional logic may need to be introduced to handle how things are combined.
     for step in recipe.iter() {
-        if let Some(steep) = step.as_any().downcast_ref::<Steep>() {
+        if let Some(steep) = step.as_any().downcast_ref::<Steep<T>>() {
             tea_batch = steep.exec(tea_batch);
-        } else if let Some(skim) = step.as_any().downcast_ref::<Skim>() {
+        } else if let Some(skim) = step.as_any().downcast_ref::<Skim<T>>() {
             tea_batch = skim.exec(tea_batch);
-        } else if let Some(pour) = step.as_any().downcast_ref::<Pour>() {
+        } else if let Some(pour) = step.as_any().downcast_ref::<Pour<T>>() {
             tea_batch = pour.exec(tea_batch);
         }
     }
