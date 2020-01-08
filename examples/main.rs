@@ -63,7 +63,7 @@ fn main() {
     
     // Add sources to pot.
     // source 1:
-    new_pot.add_source(Box::new(Fill {
+    new_pot = new_pot.add_source(Box::new(Fill {
         name: String::from("fake_tea1"),
         source: String::from("hardcoded"),
         computation: Box::new(|args, brewery, recipe| {
@@ -95,7 +95,7 @@ fn main() {
     }));
     
     // source 2:
-    new_pot.add_source(Box::new(Fill{
+    new_pot = new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea2"),
         source: String::from("hardcoded"),
         computation: Box::new(|args, brewery, recipe| {
@@ -128,7 +128,7 @@ fn main() {
     
     // Add ingredients to pot.
     // steep 1:
-    new_pot.add_ingredient(Box::new(Steep{
+    new_pot = new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
         computation: Box::new(|tea_batch: Vec<TextTea>, args| {
             tea_batch
@@ -153,7 +153,7 @@ fn main() {
     }));
     
     // skim 1:
-    new_pot.add_ingredient(Box::new(Skim{
+    new_pot = new_pot.add_ingredient(Box::new(Skim{
         name: String::from("skim1"),
         computation: Box::new(|tea_batch: Vec<TextTea>, _args| {
             tea_batch
@@ -168,7 +168,7 @@ fn main() {
     }));
     
     // pour 1:
-    new_pot.add_ingredient(Box::new(Pour{
+    new_pot = new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1"),
         computation: Box::new(|tea_batch: Vec<TextTea>, args| {
             // Count batches flowing through Pour operation.

@@ -23,9 +23,9 @@ impl<T: Send + 'static> Pot<T> {
     /// # Arguments
     ///
     /// * `ingredient` - the ingredient to add to the recipe
-    pub fn add_ingredient(&self, ingredient: Box<dyn Ingredient<T> + Send + Sync>) {
-        let mut recipe = self.recipe.write().unwrap();
-        recipe.push(ingredient);
+    pub fn add_ingredient(self, ingredient: Box<dyn Ingredient<T> + Send + Sync>) -> Pot<T> {
+        self.recipe.write().unwrap().push(ingredient);
+        self
     }
 
     ///
@@ -34,8 +34,9 @@ impl<T: Send + 'static> Pot<T> {
     /// # Arguments
     ///
     /// * `source` - the source to add to the sources Array
-    pub fn add_source(&mut self, source: Box<dyn Source<T>>) {
-        &self.sources.push(source);
+    pub fn add_source(mut self, source: Box<dyn Source<T>>) -> Pot<T> {
+        self.sources.push(source);
+        self
     }
 
     /// 
@@ -96,15 +97,15 @@ mod tests {
 
     #[test]
     fn create_pot_with_source() {
-        let mut new_pot = Pot::<TestTea>::new();
-        new_pot.add_source(Box::new(Fill{
-            name: String::from("fake_tea"),
-            source: String::from("hardcoded"),
-            computation: Box::new(|_args, _brewery, _recipe| {
-                TestTea::default();
-            }),
-            params: None,
-        }));
+        let new_pot = Pot::<TestTea>::new()
+            .add_source(Box::new(Fill{
+                name: String::from("fake_tea"),
+                source: String::from("hardcoded"),
+                computation: Box::new(|_args, _brewery, _recipe| {
+                    TestTea::default();
+                }),
+                params: None,
+            }));
         assert_eq!(new_pot.get_sources().len(), 1);
         assert_eq!(new_pot.get_sources()[0].get_name(), "fake_tea");
         assert_eq!(new_pot.get_sources()[0].get_source(), "hardcoded");
@@ -112,21 +113,21 @@ mod tests {
 
     #[test]
     fn create_pot_with_recipe() {
-        let new_pot = Pot::new();
-        new_pot.add_ingredient(Box::new(Steep{
-            name: String::from("steep1"),
-            computation: Box::new(|_tea, _args| {
-                vec![TestTea::default()]
-            }),
-            params: None,
-        }));
-        new_pot.add_ingredient(Box::new(Pour{
-            name: String::from("pour1"),
-            computation: Box::new(|_tea, _args| {
-                vec![TestTea::default()]
-            }),
-            params: None,
-        }));
+        let new_pot = Pot::new()
+            .add_ingredient(Box::new(Steep{
+                name: String::from("steep1"),
+                computation: Box::new(|_tea, _args| {
+                    vec![TestTea::default()]
+                }),
+                params: None,
+            }))
+            .add_ingredient(Box::new(Pour{
+                name: String::from("pour1"),
+                computation: Box::new(|_tea, _args| {
+                    vec![TestTea::default()]
+                }),
+                params: None,
+            }));
         assert_eq!(new_pot.get_recipe().read().unwrap().len(), 2);
         assert_eq!(new_pot.get_recipe().read().unwrap()[0].get_name(), "steep1");
         assert_eq!(new_pot.get_recipe().read().unwrap()[1].get_name(), "pour1");
@@ -134,21 +135,21 @@ mod tests {
 
     #[test]
     fn create_pot_with_recipe_and_optional_params() {
-        let new_pot = Pot::new();
-        new_pot.add_ingredient(Box::new(Steep{
-            name: String::from("steep1"),
-            computation: Box::new(|_tea, _args| {
-                vec![TestTea::default()]
-            }),
-            params: Some(Box::new(TestArgs::default())),
-        }));
-        new_pot.add_ingredient(Box::new(Pour{
-            name: String::from("pour1"),
-            computation: Box::new(|_tea, _args| {
-                vec![TestTea::default()]
-            }),
-            params: None,
-        }));
+        let new_pot = Pot::new()
+            .add_ingredient(Box::new(Steep{
+                name: String::from("steep1"),
+                computation: Box::new(|_tea, _args| {
+                    vec![TestTea::default()]
+                }),
+                params: Some(Box::new(TestArgs::default())),
+            }))
+            .add_ingredient(Box::new(Pour{
+                name: String::from("pour1"),
+                computation: Box::new(|_tea, _args| {
+                    vec![TestTea::default()]
+                }),
+                params: None,
+            }));
         assert_eq!(new_pot.get_recipe().read().unwrap().len(), 2);
         assert_eq!(new_pot.get_recipe().read().unwrap()[0].get_name(), "steep1");
         assert_eq!(new_pot.get_recipe().read().unwrap()[1].get_name(), "pour1");
@@ -156,29 +157,29 @@ mod tests {
 
     #[test]
     fn create_pot_with_source_and_recipe() {
-        let mut new_pot = Pot::new();
-        new_pot.add_source(Box::new(Fill{
-            name: String::from("fake_tea"),
-            source: String::from("hardcoded"),
-            computation: Box::new(|_args, _brewery, _recipe| {
-                TestTea::default();
-            }),
-            params: None,
-        }));
-        new_pot.add_ingredient(Box::new(Steep{
-            name: String::from("steep1"),
-            computation: Box::new(|_tea, _args| {
-                vec![TestTea::default()]
-            }),
-            params: None,
-        }));
-        new_pot.add_ingredient(Box::new(Pour{
-            name: String::from("pour1"),
-            computation: Box::new(|_tea, _args| {
-                vec![TestTea::default()]
-            }),
-            params: None,
-        }));
+        let new_pot = Pot::new()
+            .add_source(Box::new(Fill{
+                name: String::from("fake_tea"),
+                source: String::from("hardcoded"),
+                computation: Box::new(|_args, _brewery, _recipe| {
+                    TestTea::default();
+                }),
+                params: None,
+            }))
+            .add_ingredient(Box::new(Steep{
+                name: String::from("steep1"),
+                computation: Box::new(|_tea, _args| {
+                    vec![TestTea::default()]
+                }),
+                params: None,
+            }))
+            .add_ingredient(Box::new(Pour{
+                name: String::from("pour1"),
+                computation: Box::new(|_tea, _args| {
+                    vec![TestTea::default()]
+                }),
+                params: None,
+            }));
         assert_eq!(new_pot.get_sources().len(), 1);
         assert_eq!(new_pot.get_recipe().read().unwrap().len(), 2);
         assert_eq!(new_pot.get_sources()[0].get_name(), "fake_tea");
