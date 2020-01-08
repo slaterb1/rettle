@@ -5,7 +5,6 @@ use rettle::brewery::{Brewery, make_tea};
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
 
 // Example object that implements the Tea trait
 #[derive(Serialize, Deserialize, Debug, PartialEq, Default, Clone)]
@@ -50,9 +49,8 @@ impl Argument for PourArgs {
 
 fn main() {
     // Initialize pot, brewery.
-    let start_time = Instant::now();
     let mut new_pot = Pot::new();
-    let brewery = Brewery::new(2, start_time);
+    let brewery = Brewery::new(2);
 
     // Setup example params.
     let fill_args1 = FillArgs { batch_size: 200, docs_to_create: 1000000 };

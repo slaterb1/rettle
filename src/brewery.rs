@@ -41,7 +41,7 @@ impl Brewery {
     ///
     /// * `size` - number of brewers to instantiate
     /// * `start_time` - program start time to expose runtime metrics
-    pub fn new(size: usize, start_time: Instant) -> Brewery {
+    pub fn new(size: usize) -> Brewery {
         assert!(size > 0);
 
         let (sender, plain_rx) = mpsc::channel();
@@ -55,7 +55,7 @@ impl Brewery {
         Brewery {
             brewers,
             sender,
-            start_time,
+            start_time: Instant::now(),
         }
     }
 
@@ -177,7 +177,6 @@ pub fn make_tea<T: Send + 'static>(mut tea_batch: Vec<T>, recipe: Arc<RwLock<Vec
 #[cfg(test)]
 mod tests {
     use super::Brewery;
-    use std::time::Instant;
 
     #[derive(Debug, PartialEq, Default)]
     struct TestTea {
@@ -186,14 +185,14 @@ mod tests {
 
     #[test]
     fn create_brewery_with_brewers() {
-        let brewery = Brewery::new(4, Instant::now());
+        let brewery = Brewery::new(4);
         assert_eq!(brewery.brewers.len(), 4);
     }
 
     #[test]
     #[should_panic]
     fn create_brewery_with_no_brewers() {
-        let _brewery = Brewery::new(0, Instant::now());
+        let _brewery = Brewery::new(0);
     }
 
     //TODO figure out how to properly test threads
