@@ -177,19 +177,12 @@ pub fn make_tea<T: Send + 'static>(mut tea_batch: Vec<T>, recipe: Arc<RwLock<Vec
 #[cfg(test)]
 mod tests {
     use super::Brewery;
-    use crate::tea::Tea;
     use std::time::Instant;
     use std::any::Any;
 
     #[derive(Debug, PartialEq, Default)]
     struct TestTea {
         x: i32,
-    }
-
-    impl Tea for TestTea {
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
     }
 
     #[test]

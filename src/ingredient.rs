@@ -162,19 +162,12 @@ impl<T: Send + 'static>  Ingredient<T> for Skim<T>  {
 #[cfg(test)]
 mod tests {
     use super::super::ingredient::{Fill, Steep, Skim, Pour, Argument, Ingredient};
-    use super::super::tea::Tea;
     use super::super::source::Source;
     use std::any::Any;
 
     #[derive(Debug, PartialEq, Default, Clone)]
     struct TestTea {
         x: Option<i32>,
-    }
-
-    impl Tea for TestTea {
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
     }
 
     #[derive(Default)]
@@ -227,27 +220,23 @@ mod tests {
     fn create_steep_no_params() {
         let steep = Steep {
             name: String::from("test_steep"),
-            computation: Box::new(|tea, _args| {
+            computation: Box::new(|tea: Vec<TestTea>, _args| {
                 tea.into_iter()
-                   .map(|tea| {
-                       let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
-                       let mut new_tea = tea.clone();
+                   .map(|mut tea| {
                        let new_val = match new_tea.x {
                            Some(x) => Some(x + 5),
                            None => None
                        };
                        new_tea.x = new_val;
-                       Box::new(new_tea) as Box<dyn Tea + Send>
+                       new_tea
                    })
                    .collect()
             }),
             params: None,
         };
-        let orig_tea = vec![Box::new(TestTea { x: Some(0) }) as Box<dyn Tea + Send>];
-        let orig_tea_copy = vec![Box::new(TestTea { x: Some(0) }) as Box<dyn Tea + Send>];
+        let orig_tea = vec![TestTea { x: Some(0) }];
+        let orig_tea_copy = orig_tea.clone();
         let new_tea = steep.exec(orig_tea);
-        let orig_tea = orig_tea_copy[0].as_any().downcast_ref::<TestTea>().unwrap();
-        let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(steep.get_name(), "test_steep");
         assert_eq!(new_tea.x.unwrap(), orig_tea.x.unwrap() + 5);
     }
@@ -256,11 +245,9 @@ mod tests {
     fn create_steep_with_params() {
         let steep = Steep {
             name: String::from("test_steep"),
-            computation: Box::new(|tea, args| {
+            computation: Box::new(|tea: Vec<TextArgs>, args| {
                 tea.into_iter()
-                   .map(|tea| {
-                       let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
-                       let mut new_tea = tea.clone();
+                   .map(|mut tea| {
                        match args {
                            None => println!("Nothing"),
                            Some(box_args) => {
@@ -272,17 +259,15 @@ mod tests {
                                new_tea.x = new_val;
                            }
                        }
-                       Box::new(new_tea) as Box<dyn Tea + Send>
+                       new_tea
                    })
                    .collect()
             }),
             params: Some(Box::new(TestArgs { val: 10 })),
         };
-        let orig_tea = vec![Box::new(TestTea { x: Some(0) }) as Box<dyn Tea + Send>];
-        let orig_tea_copy = vec![Box::new(TestTea { x: Some(0) }) as Box<dyn Tea + Send>];
+        let orig_tea = vec![TestTea { x: Some(0) }];
+        let orig_tea_copy = orig_tea.clone();
         let new_tea = steep.exec(orig_tea);
-        let orig_tea = orig_tea_copy[0].as_any().downcast_ref::<TestTea>().unwrap();
-        let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(steep.get_name(), "test_steep");
         assert_eq!(new_tea.x.unwrap(), orig_tea.x.unwrap() + 10);
     }
@@ -291,22 +276,19 @@ mod tests {
     fn create_pour_no_params() {
         let pour = Pour {
             name: String::from("test_pour"),
-            computation: Box::new(|tea, _args| {
+            computation: Box::new(|tea: Vec<TestTea>, _args| {
                 tea.into_iter()
                    .map(|tea| {
-                       let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
                        let new_tea = tea.clone();
-                       Box::new(new_tea) as Box<dyn Tea + Send>
+                       new_tea
                    })
                    .collect()
             }),
             params: None,
         };
-        let orig_tea = vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>];
+        let orig_tea = vec![TestTea::default()];
+        let orig_tea_copy = orig_tea.clone();
         let new_tea = pour.exec(orig_tea);
-        let orig_tea_copy = vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>];
-        let orig_tea = orig_tea_copy[0].as_any().downcast_ref::<TestTea>().unwrap();
-        let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(pour.get_name(), "test_pour");
         assert_eq!(new_tea.x, orig_tea.x);
     }
@@ -315,10 +297,9 @@ mod tests {
     fn create_pour_with_params() {
         let pour = Pour {
             name: String::from("test_pour"),
-            computation: Box::new(|tea, args| {
+            computation: Box::new(|tea: Vec<TestTea>, args| {
                 tea.into_iter()
                    .map(|tea| {
-                       let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
                        let new_tea = tea.clone();
                        match args {
                            None => println!("Nothing"),
@@ -326,17 +307,15 @@ mod tests {
                                let _box_args = _box_args.as_any().downcast_ref::<TestArgs>().unwrap();
                            }
                        }
-                       Box::new(new_tea) as Box<dyn Tea + Send>
+                       new_tea
                    })
                    .collect()
             }),
             params: Some(Box::new(TestArgs { val: 10 })),
         };
-        let orig_tea = vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>];
-        let orig_tea_copy = vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>];
+        let orig_tea = vec![TestTea::default()];
+        let orig_tea_copy = orig_tea.clone();
         let new_tea = pour.exec(orig_tea);
-        let orig_tea = orig_tea_copy[0].as_any().downcast_ref::<TestTea>().unwrap();
-        let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(pour.get_name(), "test_pour");
         assert_eq!(new_tea.x, orig_tea.x);
     }
@@ -345,22 +324,18 @@ mod tests {
     fn create_skim_no_params() {
         let skim = Skim {
             name: String::from("test_skim"),
-            computation: Box::new(|tea, _args| {
+            computation: Box::new(|tea: Vec<TestTea>, _args| {
                 tea.into_iter()
-                   .map(|tea| {
-                       let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
-                       let mut new_tea = tea.clone();
+                   .map(|mut tea| {
                        new_tea.x = None;
-                       Box::new(new_tea) as Box<dyn Tea + Send>
+                       new_tea
                    })
                    .collect()
             }),
             params: None,
         };
-        let orig_tea = vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>];
-        let orig_tea_copy = vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>];
+        let orig_tea = vec![TestTea::default()];
         let new_tea = skim.exec(orig_tea);
-        let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(skim.get_name(), "test_skim");
         assert_eq!(new_tea.x, None);
     }
@@ -369,11 +344,9 @@ mod tests {
     fn create_skim_with_params() {
         let skim = Skim {
             name: String::from("test_skim"),
-            computation: Box::new(|tea, args| {
+            computation: Box::new(|tea: Vec<TestTea>, args| {
                 tea.into_iter()
-                   .map(|tea| {
-                       let tea = tea.as_any().downcast_ref::<TestTea>().unwrap();
-                       let mut new_tea = tea.clone();
+                   .map(|mut tea| {
                        match args {
                            None => println!("Nothing"),
                            Some(box_args) => {
@@ -385,16 +358,14 @@ mod tests {
                                };
                            }
                        }
-                       Box::new(new_tea) as Box<dyn Tea + Send>
+                       new_tea
                    })
                    .collect()
             }),
             params: Some(Box::new(TestSkimArgs { field: "x" })),
         };
-        let orig_tea = vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>];
-        let orig_tea_copy = vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>];
+        let orig_tea = vec![TestTea::default()];
         let new_tea = skim.exec(orig_tea);
-        let new_tea = new_tea[0].as_any().downcast_ref::<TestTea>().unwrap();
         assert_eq!(skim.get_name(), "test_skim");
         assert_eq!(new_tea.x, None);
     }

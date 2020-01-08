@@ -9,7 +9,6 @@ rettle has the following Types to be used in any project to "Brew" data:
 - **Brewer:** worker that brews the Tea
 
 ## Traits
-- **Tea:** inherited by custom data struct defined that will be transformed in the ETL pipeline
 - **Ingredient:** defines the steps that can be included in the ETL recipe
 - **Argument:** defines additional params that an Ingredient operation can use (Optional)
 
@@ -29,17 +28,6 @@ pub struct TextTea {
     pub x: i32,
     pub str_val: String,
     pub y: bool,
-}
-```
-
-Plus implement the `Tea` trait methods.
-
-Example:
-```ignore
-impl Tea for TextTea {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
 }
 ```
 
@@ -150,7 +138,6 @@ The community can add Ingredient crates that can be used along with this crate t
 */
 
 pub mod brewery;
-pub mod tea;
 pub mod ingredient;
 pub mod source;
 pub mod pot;
