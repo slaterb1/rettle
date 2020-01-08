@@ -1,6 +1,5 @@
 use rettle::pot::Pot;
 use rettle::ingredient::{Fill, Steep, Skim, Pour, Argument};
-use rettle::tea::Tea;
 use rettle::brewery::{Brewery, make_tea};
 
 use serde::{Deserialize, Serialize};
@@ -15,12 +14,6 @@ pub struct TextTea {
     pub x: Option<i32>,
     pub str_val: Option<String>,
     pub y: Option<bool>,
-}
-
-impl Tea for TextTea {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
 }
 
 // Setup Argument Trait structs that are used in computations.
@@ -90,7 +83,7 @@ fn main() {
             for _ in 0 .. num_iterations {
                 let mut tea_batch = Vec::with_capacity(batch_size);
                 for _ in 0 .. batch_size {
-                    tea_batch.push(Box::new(TextTea { x: Some(0), str_val: Some(String::new()), y: Some(true) }) as Box<dyn Tea + Send>);
+                    tea_batch.push(TextTea { x: Some(0), str_val: Some(String::new()), y: Some(true) });
                 }
                 let recipe = Arc::clone(&recipe);
                 brewery.take_order(|| {
@@ -122,7 +115,7 @@ fn main() {
             for _ in 0 .. num_iterations {
                 let mut tea_batch = Vec::with_capacity(batch_size);
                 for _ in 0 .. batch_size {
-                    tea_batch.push(Box::new(TextTea { x: Some(0), str_val: Some(String::new()), y: Some(true) }) as Box<dyn Tea + Send>);
+                    tea_batch.push(TextTea { x: Some(0), str_val: Some(String::new()), y: Some(true) });
                 }
                 let recipe = Arc::clone(&recipe);
                 brewery.take_order(|| {
@@ -137,11 +130,10 @@ fn main() {
     // steep 1:
     new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
-        computation: Box::new(|tea_batch, args| {
+        computation: Box::new(|tea_batch: Vec<TextTea>, args| {
             tea_batch
                 .into_iter()
-                .map(|tea| {
-                    let mut tea = tea.as_any().downcast_ref::<TextTea>().unwrap().clone();
+                .map(|mut tea| {
                     match args {
                         None => panic!("No params passed, not editing object!"),
                         Some(box_args) => {
@@ -153,7 +145,7 @@ fn main() {
                             tea.x = new_val
                         }
                     }
-                    Box::new(tea) as Box<dyn Tea + Send>
+                    tea
                 })
                 .collect()
         }),
@@ -163,13 +155,12 @@ fn main() {
     // skim 1:
     new_pot.add_ingredient(Box::new(Skim{
         name: String::from("skim1"),
-        computation: Box::new(|tea_batch, _args| {
+        computation: Box::new(|tea_batch: Vec<TextTea>, _args| {
             tea_batch
                 .into_iter()
-                .map(|tea| {
-                    let mut tea = tea.as_any().downcast_ref::<TextTea>().unwrap().clone();
+                .map(|mut tea| {
                     tea.y = None;
-                    Box::new(tea) as Box<dyn Tea + Send>
+                    tea
                 })
                 .collect()
         }),
@@ -179,7 +170,7 @@ fn main() {
     // pour 1:
     new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1"),
-        computation: Box::new(|tea_batch, args| {
+        computation: Box::new(|tea_batch: Vec<TextTea>, args| {
             // Count batches flowing through Pour operation.
             match args {
                 None => println!("No params passed"),

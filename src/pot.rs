@@ -5,15 +5,15 @@ use crate::brewery::Brewery;
 use std::sync::{Arc, RwLock};
 
 /// Data Structure that holds the recipe to brew tea (ETL data).
-pub struct Pot {
-    recipe:  Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>>,
-    sources: Vec<Box<dyn Source>>,
+pub struct Pot<T: Send> {
+    recipe:  Arc<RwLock<Vec<Box<dyn Ingredient<T> + Send + Sync>>>>,
+    sources: Vec<Box<dyn Source<T>>>,
 }
 
-impl Pot {
+impl<T: Send + 'static> Pot<T> {
     ///
     /// Initializes Pot with an empty recipe and empty sources.
-    pub fn new() -> Pot {
+    pub fn new() -> Pot<T> {
         Pot { recipe: Arc::new(RwLock::new(Vec::new())), sources: Vec::new() }
     }
 
@@ -23,7 +23,7 @@ impl Pot {
     /// # Arguments
     ///
     /// * `ingredient` - the ingredient to add to the recipe
-    pub fn add_ingredient(&self, ingredient: Box<dyn Ingredient + Send + Sync>) {
+    pub fn add_ingredient(&self, ingredient: Box<dyn Ingredient<T> + Send + Sync>) {
         let mut recipe = self.recipe.write().unwrap();
         recipe.push(ingredient);
     }
@@ -34,19 +34,19 @@ impl Pot {
     /// # Arguments
     ///
     /// * `source` - the source to add to the sources Array
-    pub fn add_source(&mut self, source: Box<dyn Source>) {
+    pub fn add_source(&mut self, source: Box<dyn Source<T>>) {
         &self.sources.push(source);
     }
 
     /// 
     /// Returns the sources held by the Pot.
-    pub fn get_sources(&self) -> &Vec<Box<dyn Source>> {
+    pub fn get_sources(&self) -> &Vec<Box<dyn Source<T>>> {
         &self.sources
     }
 
     /// 
     /// Returns the recipe held by the Pot.
-    pub fn get_recipe(&self) -> Arc<RwLock<Vec<Box<dyn Ingredient + Send + Sync>>>> {
+    pub fn get_recipe(&self) -> Arc<RwLock<Vec<Box<dyn Ingredient<T> + Send + Sync>>>> {
         Arc::clone(&self.recipe)
     }
 
@@ -60,7 +60,7 @@ impl Pot {
         println!("Brewing Tea...");
         for source in self.get_sources() {
             source.print();
-            let fill = source.as_any().downcast_ref::<Fill>().unwrap();
+            let fill = source.as_any().downcast_ref::<Fill<T>>().unwrap();
             fill.collect(brewery, self.get_recipe());
         }
     }
@@ -70,18 +70,11 @@ impl Pot {
 mod tests {
     use super::Pot;
     use super::super::ingredient::{Fill, Steep, Pour, Argument};
-    use super::super::tea::Tea;
     use std::any::Any;
 
     #[derive(Debug, PartialEq, Default)]
     struct TestTea {
         x: i32,
-    }
-
-    impl Tea for TestTea {
-        fn as_any(&self) -> &dyn Any {
-            self
-        }
     }
 
     #[derive(Default)]
@@ -97,18 +90,18 @@ mod tests {
 
     #[test]
     fn create_empty_pot() {
-        let new_pot = Pot::new();
+        let new_pot = Pot::<TestTea>::new();
         assert_eq!(new_pot.get_recipe().read().unwrap().len(), 0);
     }
 
     #[test]
     fn create_pot_with_source() {
-        let mut new_pot = Pot::new();
+        let mut new_pot = Pot::<TestTea>::new();
         new_pot.add_source(Box::new(Fill{
             name: String::from("fake_tea"),
             source: String::from("hardcoded"),
             computation: Box::new(|_args, _brewery, _recipe| {
-                Box::new(TestTea::default()) as Box<dyn Tea + Send>;
+                TestTea::default();
             }),
             params: None,
         }));
@@ -123,14 +116,14 @@ mod tests {
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
-                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
+                vec![TestTea::default()]
             }),
             params: None,
         }));
         new_pot.add_ingredient(Box::new(Pour{
             name: String::from("pour1"),
             computation: Box::new(|_tea, _args| {
-                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
+                vec![TestTea::default()]
             }),
             params: None,
         }));
@@ -145,14 +138,14 @@ mod tests {
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
-                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
+                vec![TestTea::default()]
             }),
             params: Some(Box::new(TestArgs::default())),
         }));
         new_pot.add_ingredient(Box::new(Pour{
             name: String::from("pour1"),
             computation: Box::new(|_tea, _args| {
-                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
+                vec![TestTea::default()]
             }),
             params: None,
         }));
@@ -168,21 +161,21 @@ mod tests {
             name: String::from("fake_tea"),
             source: String::from("hardcoded"),
             computation: Box::new(|_args, _brewery, _recipe| {
-                Box::new(TestTea::default()) as Box<dyn Tea + Send>;
+                TestTea::default();
             }),
             params: None,
         }));
         new_pot.add_ingredient(Box::new(Steep{
             name: String::from("steep1"),
             computation: Box::new(|_tea, _args| {
-                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
+                vec![TestTea::default()]
             }),
             params: None,
         }));
         new_pot.add_ingredient(Box::new(Pour{
             name: String::from("pour1"),
             computation: Box::new(|_tea, _args| {
-                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
+                vec![TestTea::default()]
             }),
             params: None,
         }));
