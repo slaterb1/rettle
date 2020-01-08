@@ -178,7 +178,6 @@ pub fn make_tea<T: Send + 'static>(mut tea_batch: Vec<T>, recipe: Arc<RwLock<Vec
 mod tests {
     use super::Brewery;
     use std::time::Instant;
-    use std::any::Any;
 
     #[derive(Debug, PartialEq, Default)]
     struct TestTea {

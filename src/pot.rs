@@ -90,13 +90,13 @@ mod tests {
 
     #[test]
     fn create_empty_pot() {
-        let new_pot = Pot::new();
+        let new_pot = Pot::<TestTea>::new();
         assert_eq!(new_pot.get_recipe().read().unwrap().len(), 0);
     }
 
     #[test]
     fn create_pot_with_source() {
-        let mut new_pot = Pot::new();
+        let mut new_pot = Pot::<TestTea>::new();
         new_pot.add_source(Box::new(Fill{
             name: String::from("fake_tea"),
             source: String::from("hardcoded"),
@@ -145,7 +145,7 @@ mod tests {
         new_pot.add_ingredient(Box::new(Pour{
             name: String::from("pour1"),
             computation: Box::new(|_tea, _args| {
-                vec![Box::new(TestTea::default()) as Box<dyn Tea + Send>]
+                vec![TestTea::default()]
             }),
             params: None,
         }));
