@@ -15,7 +15,6 @@ rettle has the following Types to be used in any project to "Brew" data:
 - **Brewer:** worker that brews the Tea
 
 ## Traits
-- **Tea:** inherited by custom data struct defined that will be transformed in the ETL pipeline
 - **Ingredient:** defines the steps that can be included in the ETL recipe
 - **Argument:** defines additional params that an Ingredient operation can use (Optional)
 
@@ -35,17 +34,6 @@ pub struct TextTea {
     pub x: i32,
     pub str_val: String,
     pub y: bool,
-}
-```
-
-Plus implement the `Tea` trait methods.
-
-Example:
-```rust
-impl Tea for TextTea {
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
 }
 ```
 
@@ -72,13 +60,12 @@ Finally a `Brewery` struct must be created to specify the number of `Brewers` (t
 ```rust
 fn main() {
     // Initialize variables
-    let start_time = Instant::now();
     let mut new_pot = Pot::new();
-    let brewery = Brewery::new(2, start_time);
+    let brewery = Brewery::new(2);
     let steep_args = SteepArgs { increment: 10000 };
     
     // Add source to pot
-    new_pot.add_source(Box::new(Fill{
+    new_pot = new_pot.add_source(Box::new(Fill{
         name: String::from("fake_tea"),
         source: String::from("hardcoded"),
         computation: Box::new(|_args, brewery, recipe| {
@@ -101,7 +88,7 @@ fn main() {
     }));
     
     // Add ingredients to pot
-    new_pot.add_ingredient(Box::new(Steep{
+    new_pot = new_pot.add_ingredient(Box::new(Steep{
         name: String::from("steep1"),
         computation: Box::new(|tea_batch, args| {
             tea_batch.into_iter()
@@ -120,8 +107,9 @@ fn main() {
                 .collect()
         }),
         params: Some(Box::new(steep_args)),
-    }));
-    new_pot.add_ingredient(Box::new(Pour{
+    }))
+
+    new_pot = new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1"),
         computation: Box::new(|tea_batch, _args| {
             tea_batch.into_iter()
