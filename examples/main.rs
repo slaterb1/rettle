@@ -83,7 +83,7 @@ fn main() {
             for _ in 0 .. num_iterations {
                 let mut tea_batch = Vec::with_capacity(batch_size);
                 for _ in 0 .. batch_size {
-                    tea_batch.push(Box::new(TextTea { x: Some(0), str_val: Some(String::new()), y: Some(true) }));
+                    tea_batch.push(TextTea { x: Some(0), str_val: Some(String::new()), y: Some(true) });
                 }
                 let recipe = Arc::clone(&recipe);
                 brewery.take_order(|| {
@@ -115,7 +115,7 @@ fn main() {
             for _ in 0 .. num_iterations {
                 let mut tea_batch = Vec::with_capacity(batch_size);
                 for _ in 0 .. batch_size {
-                    tea_batch.push(Box::new(TextTea { x: Some(0), str_val: Some(String::new()), y: Some(true) }));
+                    tea_batch.push(TextTea { x: Some(0), str_val: Some(String::new()), y: Some(true) });
                 }
                 let recipe = Arc::clone(&recipe);
                 brewery.take_order(|| {
@@ -155,11 +155,10 @@ fn main() {
     // skim 1:
     new_pot.add_ingredient(Box::new(Skim{
         name: String::from("skim1"),
-        computation: Box::new(|tea_batch, _args| {
+        computation: Box::new(|tea_batch: Vec<TextTea>, _args| {
             tea_batch
                 .into_iter()
-                .map(|tea| {
-                    let mut tea = tea.as_any().downcast_ref::<TextTea>().unwrap().clone();
+                .map(|mut tea| {
                     tea.y = None;
                     tea
                 })
@@ -171,7 +170,7 @@ fn main() {
     // pour 1:
     new_pot.add_ingredient(Box::new(Pour{
         name: String::from("pour1"),
-        computation: Box::new(|tea_batch, args| {
+        computation: Box::new(|tea_batch: Vec<TextTea>, args| {
             // Count batches flowing through Pour operation.
             match args {
                 None => println!("No params passed"),
